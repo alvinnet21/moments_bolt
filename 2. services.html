@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photography Services</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="2. Services/service.css">
+    <script src="headerscript.js" defer></script> <!-- Using defer -->
+</head>
+
+<body>
+<!-- Header -->
+<div id="header"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('header.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('header').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error fetching the header:', error);
+            });
+    });
+</script>
+<!-- Header End -->
+
+<!-- Content -->
+<div style="text-align: center; margin-top: 50px; margin-bottom: 50px;">
+    <h1 class="tagline">Our <span>Service</span></h1>
+</div>
+<div class="content1" style="justify-items: center;">
+    <img src="2. Services/portrait1.webp" alt="portrait1">
+    <h1 class="contenttext" style="width: 800px;">“As the years unfold, we hope that each time you gaze
+        upon these photographs, a warm smile graces your face, allowing you to 
+        relive the joy, love, and magic of your special day, capturing not 
+        just moments, but the very essence of your beautiful journey together.”</h1>
+</div>
+<div class="container">
+    <div class="card">
+        <img src="2. Services/photography5.webp" alt="portrait1">
+            <a href="3. photography.html" class="btn">Discover Our Photography</a>
+    </div>
+    <div class="card">
+        <img src="2. Services/photography5.webp" alt="portrait1">
+        <a href="4. videography.html" class="btn">Discover Our Videography</a>
+    </div>
+</div>
+
+<!-- Content End -->
+
+<!-- Footer -->
+<div id="footer"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('footer.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('footer').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error fetching the footer:', error);
+            });
+    });
+</script>
+<!-- Footer End -->
+</body>
+</html>

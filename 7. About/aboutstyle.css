@@ -1,0 +1,58 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: url('image.png') no-repeat center center fixed;
+    background-size: cover;
+    color: #4a4a4a;
+}
+
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 50px 20px;
+    background-color: rgba(255, 255, 255, 0.9); /* To give a slight transparent effect over the background */
+}
+
+.text-content h2 {
+    font-style: italic;
+    font-size: 1.5rem;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.text-content h1 {
+    font-size: 3rem;
+    font-weight: 300;
+    margin-bottom: 30px;
+}
+
+.text-content p {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+.text-content h3 {
+    font-size: 1.6rem;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+.text-content em {
+    font-style: italic;
+    font-weight: 600;
+}
+
+@media screen and (max-width: 768px) {
+    .text-content h1 {
+        font-size: 2rem;
+    }
+    
+    .text-content p {
+        font-size: 1rem;
+    }
+}

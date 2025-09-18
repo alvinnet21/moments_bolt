@@ -1,0 +1,155 @@
+.styled-text {
+    font-size: 24px;
+    color: #333; /* Default text color */
+    font-weight: normal;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.styled-text .highlight {
+    color: #a48d7e; /* Color for "Tell us" */
+}
+
+.styled-text em {
+    font-style: italic;
+    text-decoration: underline;
+    text-decoration-color: #a48d7e; /* Underline color for italic text */
+}
+
+.wedding-section {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: stretch;
+    padding: 50px;
+    gap: 20px;
+    width: 85%;
+    margin: 0 auto;
+}
+
+.text-content {
+    flex: 1;
+}
+
+.wedding-section h1 {
+    font-size: 2.5rem;
+    color: #6f6f6f;
+    margin-bottom: 20px;
+}
+
+.wedding-section p {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+}
+
+.wedding-section ul {
+    list-style-type: none;
+    margin-bottom: 20px;
+}
+
+.wedding-section ul li {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    font-style: italic;
+    color: #7a7a7a;
+}
+
+.learn-more {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #b9a394;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.learn-more:hover {
+    background-color: #a48872;
+}
+
+.wedding-section .images {
+    flex: 1.5;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+}
+
+.wedding-section .image-wrapper-horizontal {
+    flex: 1;
+    overflow: hidden;
+}
+
+.wedding-section .image-wrapper-vertical {
+    flex: 1;
+    overflow: hidden;
+}
+
+.wedding-section img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 5%;
+}
+
+.wedding-review-section {
+    background-color: #9f8c7c; /* Background color similar to the image */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.wedding-review-section .testimonial {
+    color: white;
+    text-align: center;
+    max-width: 700px;
+    padding: 20px;
+    font-size: 18px;
+}
+
+.wedding-review-section .testimonial p {
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.wedding-review-section .author {
+    margin-top: 20px;
+}
+
+.photo-collage {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 10px;
+    padding: 20px;
+}
+
+.photo-collage img {
+    width: 100%; /* Ensures the image takes up the full width of the column */
+    height: auto; /* Allows the height to adjust based on the image's natural aspect ratio */
+    object-fit: cover; /* Ensures the image fills the container without distortion */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+@media screen and (max-width: 768px) {
+    .photo-collage {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .photo-collage {
+        grid-template-columns: 1fr;
+    }
+}
+
+.photo-collage-item {
+    display: flex;
+    flex-direction: column;
+    max-height: 2000px;
+    gap: 20px;
+    padding: 20px;
+}

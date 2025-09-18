@@ -1,0 +1,265 @@
+@font-face {
+    font-family: 'EB Garamond';
+    src: url('Font/EBGaramond.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Libre Baskerville';
+    src: url('Font/LBakersville.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+*{
+    padding: 0;
+    margin:0;
+    box-sizing: border-box;
+}
+
+h1,h2 {
+    font-family: 'Libre Baskerville', serif;
+}
+
+body {
+    font-family: 'EB Garamond', serif;
+}
+/* navigation bar */
+/* Add this CSS to improve responsiveness */
+.navbar {
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-right: 30px;
+    padding-left: 30px;
+    position: relative;
+}
+
+.logo img {
+    height: 60px;
+    width: auto;
+}
+
+/* Hide the ulnavbar on mobile by default */
+.ulnavbar {
+    list-style-type: none;
+    margin-left: auto;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    transition: max-height 0.3s ease-out;
+}
+
+/* Styling individual list items */
+.li-navbar {
+    color: black;
+    text-decoration: none;
+    margin-left: 10px;
+    padding: 15px;
+    font-size: 30px;
+}
+
+.banner {
+    background-image: url(navbar.jpg);
+    width: 100%;
+    height: 100vh;
+    margin-top: -70px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    display: flex;
+}
+
+/* Dropdown menu styles */
+.dropdown {
+    position: relative;
+    font-size: 30px;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 4px;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    z-index: 1000;
+}
+
+.dropdown-menu li {
+    padding: 10px 15px;
+    display: block;
+}
+
+.dropdown-menu li a {
+    color: black;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.dropdown-menu li a:hover {
+    background-color: #f0f0f0;
+}
+
+/* Hamburger icon */
+.hamburger {
+    display: none;
+    cursor: pointer;
+    font-size: 30px;
+    padding: 10px;
+}
+
+/* Media queries for mobile responsiveness */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+    }
+
+    .logo {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-top: 50px;
+    }
+
+    .ulnavbar {
+        list-style-type: none;
+        margin-left: auto;
+        display: flex;
+        flex-direction: column; /* Stack items vertically on mobile */
+        margin: 0;
+        padding: 0;
+        max-height: 0;
+        text-align: start;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        width: 100%;
+        z-index: 10;
+    }
+
+    .ulnavbar.show {
+        max-height: 1000px; /* Expand the navbar when clicked */
+        overflow: visible;
+    }
+
+    .li-navbar {
+        margin-left: 0;
+        text-align: center;
+        padding: 10px;
+        width: 100%;
+    }
+
+    .hamburger {
+        display: block;
+        margin-left: auto;
+    }
+
+    /* Dropdown inside mobile */
+    .dropdown-menu {
+        position: relative;
+        top: 0;
+        left: 0;
+        padding-left: 20px;
+    }
+}
+/* Navigation Bar finish */
+
+
+/* Footer */
+.footer {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: #998c7f;
+    color: white;
+    padding-left: 4rem;
+    padding-right: 4rem;
+    min-height: 200px;
+    justify-content: space-between;
+    align-items: center;   /* Center items vertically across the footer */
+}
+
+.footer-section {
+    flex: 1;
+}
+
+.footer-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.footer-logo {
+    max-width: 400px;
+    height: auto;
+    filter: brightness(0) invert(1);
+}
+
+/* Increased Font Sizes */
+.footer-hours, .footer-moments-photography-right {
+    font-size: 24px;
+}
+
+/* Text Alignment */
+.footer-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    text-align: start;
+}
+
+.footer-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    text-align: end;
+}
+
+/* Media Query for Responsiveness */
+@media screen and (max-width: 768px) {
+    .footer {
+        flex-direction: column;  /* Stack sections vertically */
+        padding-left: 2rem;
+        padding-right: 2rem;
+        text-align: center;
+    }
+
+    .footer-left, .footer-right {
+        text-align: center;      /* Align text to center */
+    }
+
+    .footer-logo {
+        max-width: 200px;        /* Adjust logo size for smaller screens */
+    }
+
+    .footer-hours, .footer-moments-photography-right {
+        font-size: 20px;         /* Reduce font size on smaller screens */
+    }
+
+    .footer-section {
+        margin-bottom: 1rem;     /* Add spacing between sections */
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .footer {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .footer-hours, .footer-moments-photography-right {
+        font-size: 18px;         /* Further reduce font size for very small screens */
+    }
+
+    .footer-logo {
+        max-width: 150px;        /* Smaller logo for extra small screens */
+    }
+}

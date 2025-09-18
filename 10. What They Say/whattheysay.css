@@ -1,0 +1,94 @@
+.reviewcontent {
+    display: flex;
+    flex-direction: column;
+    color: #8d7762;
+    margin: 0;
+    padding: 0;
+}
+
+.testimonials {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    height: 100vh;
+    padding: 20px;
+    margin: 10px 0;
+    border-radius: 3px;
+    width: 100%;
+}
+
+.testimonials p {
+    font-size: 1.4em;
+    line-height: 1.6;
+    color:#998c7f;
+}
+
+.testimonials h3 {
+    margin-top: 20px;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #8d7762;
+}
+
+.testimonial {
+    width: 60%;
+}
+.button-container {
+    flex: 1;
+    margin-top: 50px;
+    margin-bottom: 100px;
+    align-self: middle;
+}
+
+.btn {
+    background-color: #998c7f;
+    color: #fff;
+    padding: 10px 20px;
+    text-decoration: none;
+    font-size: 30px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #8d7762;
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+    .testimonials p {
+        font-size: 1.2em; /* Reduce font size on smaller screens */
+    }
+
+    .testimonials h3 {
+        font-size: 1.5em; /* Reduce heading size */
+    }
+
+    .testimonial {
+        width: 95%; /* Allow more width on smaller screens */
+    }
+
+    .btn {
+        font-size: 1.2em; /* Smaller button font size */
+        padding: 8px 16px; /* Adjust padding */
+    }
+}
+
+@media (max-width: 480px) {
+    .testimonials p {
+        font-size: 1em; /* Further reduce font size */
+    }
+
+    .testimonials h3 {
+        font-size: 1.2em; /* Further reduce heading size */
+    }
+
+    .btn {
+        font-size: 1em; /* Further reduce button font size */
+        padding: 6px 12px; /* Adjust padding */
+    }
+}

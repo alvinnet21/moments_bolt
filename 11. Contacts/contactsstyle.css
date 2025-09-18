@@ -1,0 +1,134 @@
+.contact-section-alt {
+    max-width: 1400px;
+    margin: 50px auto;
+    background-color: #ffffff;
+    padding: 50px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.contact-section-alt h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 40px;
+}
+
+.contact-info-alt {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: center;
+    align-items: stretch;
+    gap: 50px;
+}
+
+.contact-card, .map-card {
+    width: 100%;
+    background-color: #ecf0f1;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.contact-card h2, .map-card h2 {
+    color: #34495e;
+    margin-bottom: 20px;
+}
+
+.contact-phone::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 1px;
+    background-color: #998c7f;
+    margin-top: 18px;
+}
+
+.contact-card p {
+    font-size: 22px;
+    text-align: start;
+    width: 100%;
+    color: #7f8c8d;
+    margin-bottom: 10px;
+}
+
+.map-card iframe {
+    border-radius: 8px;
+    border: none;
+}
+
+.contact-container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    margin-top: 50px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+.contact-container h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.contact-form .form-group {
+    margin-bottom: 15px;
+}
+
+.contact-form label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+    font-weight: bold;
+}
+
+.contact-form input,
+.contact-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+    outline: none;
+    border-color: #a48d7e;
+}
+
+.contact-form textarea {
+    resize: none;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #998c7f;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+    background-color: #a48d7e;
+}
+
+#loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 20px;
+  z-index: 1000; /* Ensure it appears above other elements */
+}

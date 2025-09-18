@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photography Services</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="15. Terms/terms.css">
+    <script src="headerscript.js" defer></script> <!-- Using defer -->
+</head>
+
+<body>
+<!-- Header -->
+<div id="header"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('header.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('header').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error fetching the header:', error);
+            });
+    });
+</script>
+<!-- Header End -->
+
+<!-- Content -->
+<body>
+    <div class="terms-container">
+        <h1>Terms & Conditions</h1>
+
+        <p>Welcome to Moments!</p>
+        <p>These terms and conditions outline the rules and regulations for the use of Moments' Website, located at www.moments.com.</p>
+
+        <h2>1. Introduction</h2>
+        <p>By accessing this website, you agree to comply with these Terms & Conditions. Do not continue to use Moments if you do not accept all the terms and conditions stated here.</p>
+
+        <h2>2. Services Overview</h2>
+        <p>Moments provides photography, cinematography, and related media services. The specific terms for these services are outlined in a separate agreement when you hire us.</p>
+
+        <h2>3. Intellectual Property</h2>
+        <p>All content on this website, including images, videos, and text, is owned by Moments. You are not allowed to reproduce, republish, or distribute any material without permission.</p>
+
+        <h2>4. Booking & Payment</h2>
+        <p>A deposit is required to secure our services. The remaining balance is due by the event day. Failure to make payments may result in cancellation or withholding of services.</p>
+
+        <h2>5. Cancellation & Refund Policy</h2>
+        <p>If you need to cancel your booking, please notify us in writing. Deposits are non-refundable, and cancellations within a certain timeframe may incur additional charges.</p>
+
+        <h2>6. Liability</h2>
+        <p>Moments is not liable for any direct or indirect damages resulting from the use of our services or website, including any loss of data or revenue.</p>
+
+        <h2>7. Third-Party Links</h2>
+        <p>Our website may contain links to third-party sites. We do not endorse or take responsibility for the content of these sites.</p>
+
+        <h2>8. Governing Law</h2>
+        <p>These terms are governed by the laws of [Your Jurisdiction], and any disputes will be resolved in the courts of [Your Jurisdiction].</p>
+
+        <h2>9. Modifications</h2>
+        <p>Moments reserves the right to modify these Terms at any time. Changes will be posted on this page.</p>
+
+        <h2>10. Contact Us</h2>
+        <p>If you have any questions, contact us at <a href="mailto:info@moments.com">info@moments.com</a>.</p>
+    </div>
+</body>
+<!-- Content End -->
+
+<!-- Footer -->
+<div id="footer"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('footer.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('footer').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error fetching the footer:', error);
+            });
+    });
+</script>
+<!-- Footer End -->
+</body>
+</html>

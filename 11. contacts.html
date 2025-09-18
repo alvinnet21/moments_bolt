@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photography Services</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="11. Contacts/contactsstyle.css">
+    <script src="headerscript.js" defer></script> <!-- Using defer -->
+</head>
+
+<body>
+<!-- Header -->
+<div id="header"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('header.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('header').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error fetching the header:', error);
+            });
+    });
+</script>
+<!-- Header End -->
+
+<!-- Content -->
+<body>
+    <section class="contact-section-alt">
+        <h1>Get in Touch</h1>
+        <div class="contact-info-alt">
+            <div class="contact-card">
+                <p><strong>Address:</strong> 26 Wellington Street, Roseberry 2018 New South Wales</p>
+                <p><strong>Email:</strong> info@moments.com</p>
+                <p class="contact-phone"><strong>Phone:</strong> (02) 4232 9846 (by appointment only)</p>
+				<p><strong>For Wedding day:</strong> Tomo (+61) 422 092 458</p>
+				<p><strong>For Pre-Wedding:</strong> Febry (+61) 420 258 277</p>
+            </div>
+            <div class="map-card">
+                <h2>Find Us</h2>
+                <!-- Google Maps Embed -->
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6621.264170951203!2d151.1964342755547!3d-33.92486747320526!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b12b1a62c902d4d%3A0xa455f1755ca4cf41!2s26%20Wellington%20St%2C%20Rosebery%20NSW%202018!5e0!3m2!1sen!2sau!4v1729069453797!5m2!1sen!2sau" 
+                    width="100%" 
+                    height="300" 
+                    style="border:0;" 
+                    allowfullscreen="" 
+                    loading="lazy">
+                </iframe>
+            </div>
+        </div>
+        <div class="contact-container">
+            <h2>Contact Us</h2>
+            <form id="contact-form" class="contact-form">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" placeholder="Your name" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Your phone number" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Your email address" required>
+                </div>
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" rows="4" placeholder="Your message" required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Send Message</button>
+            </form>
+			<div id="loading" style="display: none;">Loading...</div>
+        </div>
+    </section>
+
+    <script>
+    // Function to handle form submission
+    document.addEventListener("DOMContentLoaded", function() {
+	const form = document.getElementById("contact-form");
+    form.addEventListener("submit", function(event) {
+        event.preventDefault(); // Prevent actual form submission
+		
+		const loadingIndicator = document.getElementById("loading");
+		loadingIndicator.style.display = "block"; // Show loading indicator
+        
+		const formData = new FormData(this);
+		fetch("https://script.google.com/macros/s/AKfycbxo-kgsEcp6vIaEvI8NrXkV0AF-bj3dVNvvFsaqGQrRYOGG15fOn2IM4YztMvzCifSQ/exec", {
+            method: "POST",
+            body: formData,
+        })
+        .then(response => response.text())
+        .then(data => {
+		    loadingIndicator.style.display = "none";
+            form.reset();
+            alert("Thank you! Your message has been sent.");
+		})
+        .catch(error => {
+		    loadingIndicator.style.display = "none";
+            form.reset();
+        });
+    });
+
+    document.getElementById("phone").addEventListener("input", function(event) {
+        let phoneInput = event.target.value; 
+        // Replace non-numeric characters with an empty string
+        event.target.value = phoneInput.replace(/[^0-9]/g, '');
+    });
+});
+    </script>
+</body>
+<!-- Content End -->
+
+<!-- Footer -->
+<div id="footer"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('footer.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('footer').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error fetching the footer:', error);
+            });
+    });
+</script>
+
+<!-- Footer End -->
+</body>
+</html>

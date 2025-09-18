@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photography Services</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="3. Photography/photographystyle.css">
+    <script src="headerscript.js" defer></script> <!-- Using defer -->
+</head>
+
+<body>
+<!-- Header -->
+<div id="header"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('header.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('header').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error fetching the header:', error);
+            });
+    });
+</script>
+<!-- Header End -->
+
+<!-- Content -->
+<body>
+    <div class="styled-text">
+        <span class="highlight">Tell us</span> your story and we’ll help you capture <em>beautiful memories that lasts forever.</em>
+    </div>
+    <section class="wedding-section">
+        <div class="text-content">
+            <h1>Capturing your love story, one frame at a time.</h1>
+            <p>Congratulations on your upcoming wedding! We know this is one of the most special days of your life, and we're thrilled to be a part of it. Our goal is to make your photography experience as seamless, enjoyable, and memorable as possible.</p>
+            <p>To make your wedding day as comfortable as possible, we will provide:</p>
+            <ul>
+                <li>A relaxed atmosphere</li>
+                <li>Personalised experience</li>
+                <li>Friendly team</li>
+                <li>Memories to treasure</li>
+            </ul>
+            <a href="#" class="learn-more">Learn more</a>
+        </div>
+
+        <div class="images">
+            <div class="image-wrapper-horizontal">
+                <img src="3. Photography/paket_1.jpg" alt="Close-up of couple holding hands">
+            </div>
+            <div class="image-wrapper-vertical">
+                <img src="3. Photography/photography13.webp" alt="Couple under wedding veil">
+            </div>
+        </div>
+    </section>
+    <section class="wedding-review-section">
+        <div class="testimonial">
+            <p>Deff and Levina were fantastic to work with and ensured both our pre-wedding shoot and our wedding day were covered from all angles and included a variety of great moments throughout the day! They were very professional and creative in suggesting ideas for props, poses, locations, and angles for us while also listening to us on what we were looking for in our shoots. We’re incredibly happy with the end results and cannot recommend them enough to anyone thinking about who to choose for their special occasion!</p>
+            <div class="author">- Leith & Cherry -</div>
+        </div>
+    </section>
+    <section class="photo-collage">
+		<div class="photo-collage-item">
+			<img style="max-height: 15%" src="3. Photography/photography5.webp" alt="Photo 1"> 
+			<img style="max-height: 35%" src="3. Photography/photography4.webp" alt="Photo 2">
+			<img style="max-height: 15%" src="3. Photography/photography3.webp" alt="Photo 3">
+			<img style="max-height: 35%" src="3. Photography/photography12.webp" alt="Photo 4">
+		</div>
+		<div class="photo-collage-item">
+			<img style="max-height: 15%" src="3. Photography/photography2.webp" alt="Photo 1"> 
+			<img style="max-height: 15%" src="3. Photography/photography10.webp" alt="Photo 3">
+			<img style="max-height: 35%" src="3. Photography/photography6.webp" alt="Photo 2">
+			<img style="max-height: 35%" src="3. Photography/photography9.webp" alt="Photo 4">
+		</div>
+		<div class="photo-collage-item">
+			<img style="max-height: 15%" src="3. Photography/photography7.webp" alt="Photo 1"> 
+			<img style="max-height: 35%" src="3. Photography/photography8.webp" alt="Photo 2">
+			<img style="max-height: 35%" src="3. Photography/photography11.webp" alt="Photo 4">
+			<img style="max-height: 15%" src="3. Photography/photography1.webp" alt="Photo 3">
+		</div>
+    </section>
+    <div class="button-container" style="text-align: center;">
+        <a href="2. services.html" class="btn">Discover Our Services</a>
+    </div>
+</body>
+<!-- Content End -->
+
+<!-- Footer -->
+<div id="footer"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('footer.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('footer').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error fetching the footer:', error);
+            });
+    });
+</script>
+<!-- Footer End -->
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photography Services</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="14. Search Job/searchjobstyle.css">
+    <script src="headerscript.js" defer></script> <!-- Using defer -->
+</head>
+
+<body>
+<!-- Header -->
+<div id="header"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('header.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('header').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error fetching the header:', error);
+            });
+    });
+</script>
+<!-- Header End -->
+
+<!-- Content -->
+<body>
+    <section class="job-list-section">
+        <div class="container">
+            <h2>Job Openings</h2>
+            <div class="job-list">
+                <div class="job-card">
+                    <h3>Wedding Photographer</h3>
+                    <p><strong>Location:</strong> Remote / On-Site</p>
+                    <p><strong>Job Type:</strong> Full-Time</p>
+                    <p><strong>Description:</strong> We are looking for an experienced wedding photographer to join our team. The ideal candidate has a creative eye and a passion for capturing unforgettable moments.</p>
+                    <a href="mailto:Momentsrecruitment@gmail.com?subject=Application for Wedding Photographer Position" class="apply-btn">Apply Now</a>
+                </div>
+
+                <div class="job-card">
+                    <h3>Photo Editor</h3>
+                    <p><strong>Location:</strong> Remote</p>
+                    <p><strong>Job Type:</strong> Part-Time</p>
+                    <p><strong>Description:</strong> Join our creative team as a photo editor. You will work closely with photographers to ensure high-quality, post-processed images for clients.</p>
+                    <a href="mailto:Momentsrecruitment@gmail.com?subject=Application for Photo Editor Position" class="apply-btn">Apply Now</a>
+                </div>
+
+                <div class="job-card">
+                    <h3>Marketing Specialist</h3>
+                    <p><strong>Location:</strong> New York, NY</p>
+                    <p><strong>Job Type:</strong> Full-Time</p>
+                    <p><strong>Description:</strong> We’re seeking a marketing specialist to manage our digital and social media campaigns, and help us grow our brand awareness in the wedding photography industry.</p>
+                    <a href="mailto:Momentsrecruitment@gmail.com?subject=Application for Marketing Specialist Position" class="apply-btn">Apply Now</a>
+                </div>
+
+                <div class="job-card">
+                    <h3>Client Relations Manager</h3>
+                    <p><strong>Location:</strong> Los Angeles, CA</p>
+                    <p><strong>Job Type:</strong> Full-Time</p>
+                    <p><strong>Description:</strong> The Client Relations Manager will maintain communication with clients from initial inquiry to delivery, ensuring a smooth and positive experience.</p>
+                    <a href="mailto:Momentsrecruitment@gmail.com?subject=Application for Client Relations Manager Position" class="apply-btn">Apply Now</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+<!-- Content End -->
+
+<!-- Footer -->
+<div id="footer"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('footer.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('footer').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error fetching the footer:', error);
+            });
+    });
+</script>
+<!-- Footer End -->
+</body>
+</html>

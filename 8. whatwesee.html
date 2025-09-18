@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photography Services</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="8. What We See/whatweseestyle.css">
+    <script src="headerscript.js" defer></script> <!-- Using defer -->
+</head>
+
+<body>
+<!-- Header -->
+<div id="header"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('header.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('header').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error fetching the header:', error);
+            });
+    });
+</script>
+<!-- Header End -->
+
+<!-- Content -->
+<body>
+    <div class="reviewcontent">
+        <div class="testimonials">
+            <div class="testimonial" style="text-align: left;">
+                <h3>- Vision -</h3>
+                <p>“To be the premier storytellers through photography and cinematography, capturing life’s most memorable moments with creativity, authenticity, and timeless elegance.”</p>
+            </div>
+            <div class="testimonial" style="text-align: right; margin-top: 40px;">
+                <h3>- Mission -</h3>
+                <p>“At Moments, our mission is to craft lasting memories through personalized and high-quality photography and film services. We aim to build genuine connections with our clients, ensuring that each story we capture reflects the true emotions and uniqueness of every event, from weddings to milestone celebrations. Our dedication is to preserve these moments beautifully and meaningfully for generations to come.”</p>
+            </div>
+            <div class="testimonial" style="text-align: center; margin-top: 40px;">
+                <h3>- Values -</h3>
+                <div class="value-cards">
+                    <div class="card">
+                        <img src="13. Employments/experience.png" alt="Experience">
+                        <h3>Years of Experience</h3>
+                        <p>With over 10 years in the industry, we’ve perfected the art of capturing the essence of every wedding. Our portfolio speaks for itself with hundreds of satisfied clients.</p>
+                    </div>
+                    <div class="card">
+                        <img src="13. Employments/personalized.png" alt="Personalized">
+                        <h3>Personalized Approach</h3>
+                        <p>We take the time to get to know you and your vision. Every couple is unique, and we ensure that your wedding photos reflect your individual love story.</p>
+                    </div>
+                    <div class="card">
+                        <img src="13. Employments/high-quality.png" alt="High-Quality">
+                        <h3>High-Quality Deliverables</h3>
+                        <p>From state-of-the-art cameras to meticulous post-processing, we guarantee high-resolution images that are ready for both digital use and print.</p>
+                    </div>
+                </div>    
+            </div>
+        </div>
+    </div>        
+</body>
+<!-- Content End -->
+
+<!-- Footer -->
+<div id="footer"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('footer.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('footer').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error fetching the footer:', error);
+            });
+    });
+</script>
+<!-- Footer End -->
+</body>
+</html>

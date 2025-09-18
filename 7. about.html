@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photography Services</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="7. About/aboutstyle.css">
+    <script src="headerscript.js" defer></script> <!-- Using defer -->
+</head>
+
+<body>
+<!-- Header -->
+<div id="header"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('header.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('header').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error fetching the header:', error);
+            });
+    });
+</script>
+<!-- Header End -->
+
+<!-- Content -->
+<body>
+    <div class="container">
+        <div class="text-content">
+            <h2>Our Story</h2>
+            <h1>From the stunning shores of Sydney to the far corners of the globe.</h1>
+            <p>Founded in 2019 in the breathtaking landscapes of Australia, 
+                <em>Moments Photography</em> was born from a passion for storytelling 
+                through the art of <em>photography and videography</em>. Our founder 
+                envisioned a company that captures the essence of love and connection, 
+                allowing couples to relive their most treasured moments. 
+                Inspired by the vibrant culture and stunning scenery of our surroundings, 
+                Moments Photography aims to celebrate the beauty of every unique love story.</p>
+            
+            <p> Since our inception, we have dedicated ourselves to providing exceptional 
+                photography and videography services specifically tailored for weddings. 
+                We understand that each couple has their own vision, and it is our mission 
+                to bring that vision to life. With a focus on capturing genuine emotions and 
+                those fleeting moments, we work closely with our clients to ensure every 
+                detail is thoughtfully documented—from the intricate details of the ceremony 
+                to the laughter shared during the reception.</p>
+            
+            <p>At <em>Moments Photography</em>, we pride ourselves on our artistic approach, 
+                blending <em>documentary-style photography</em> with creative cinematography. 
+                This allows us to produce <em>timeless images and videos</em> that reflect the 
+                joy and intimacy of your special day. With Australia’s stunning landscapes 
+                as our backdrop, we’re passionate about crafting visuals that 
+                resonate deeply and immortalize the memories you’ll cherish for years to come.</p>
+
+            <p>As we continue to grow and evolve, we are incredibly grateful for the opportunity 
+                to be part of your journey. We celebrate love in all its forms and are honored to 
+                capture the magic of your wedding day. At Moments Photography, we believe that every 
+                moment matters, and we look forward to helping you create <em>lasting memories for a 
+                lifetime</em>.</p>
+                
+        </div>
+    </div>
+</body>
+<!-- Content End -->
+
+<!-- Footer -->
+<div id="footer"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('footer.html')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('footer').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error fetching the footer:', error);
+            });
+    });
+</script>
+<!-- Footer End -->
+</body>
+</html>

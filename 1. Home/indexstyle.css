@@ -1,0 +1,112 @@
+/* Content Home */
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    margin-bottom: 20px;
+}
+
+.slider {
+    position: relative;
+    max-width: 500px;
+    margin: left;
+    overflow: hidden; /* Menghindari gambar meluas keluar */
+}
+
+.slides {
+    display: flex;
+    transition: transform 1s ease; /* Transisi saat berubah slide */
+}
+
+.slide {
+    min-width: 100%; /* Membuat setiap slide memenuhi width slider */
+    transition: opacity 0.5s ease;
+}
+
+.slide img {
+    width: 100%;
+    height: auto;
+}
+
+button {
+    position: absolute;
+    top: 50%;
+    width: auto;
+    padding: 16px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: none;
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+.prev {
+    left: 0;
+}
+
+.next {
+    right: 0;
+}
+
+.dots {
+    text-align: center;
+    padding: 10px 0;
+}
+
+.dot {
+    height: 15px;
+    width: 15px;
+    margin: 0 2px;
+    border-radius: 50%;
+    background-color: gray;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.dot.active {
+    background-color: black; /* Warna titik aktif */
+}
+
+.text-container {
+    margin-left: 30px;
+    width: 500px;
+    font-style: italic;
+    text-align: left;
+    font-size: 30px;
+    color: #4a4a4a;
+    position: relative;
+}
+
+.text-container::before,
+.text-container::after {
+    content: "";
+    display: block;
+    width: 100px;
+    height: 1px;
+    background-color: #000;
+    margin: 10px auto;
+    margin-top: 18px;
+}
+
+.button-container {
+    margin-top: 50px;
+    margin-bottom: 100px;
+    align-self: middle;
+}
+
+.btn {
+    background-color: #998c7f;
+    color: #fff;
+    padding: 10px 20px;
+    text-decoration: none;
+    font-size: 30px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #8d7762;
+}
