@@ -25,6 +25,14 @@ h1,h2 {
 body {
     font-family: 'EB Garamond', serif;
 }
+:root {
+    --brand-primary: #998c7f;
+    --brand-primary-dark: #8d7762;
+    --brand-accent: #a48d7e;
+    --brand-accent-2: #b9a394;
+    --neutral-100: #f5f5f5;
+    --text-muted: #666666;
+}
 /* navigation bar */
 /* Add this CSS to improve responsiveness */
 .navbar {

@@ -6,35 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Photography Services</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="common.css">
     <link rel="stylesheet" href="12. FAQs/faqlstyle.css">
     <script src="headerscript.js" defer></script> <!-- Using defer -->
+    <script src="layout.js" defer></script>
 </head>
 
 <body>
 <!-- Header -->
 <div id="header"></div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch('header.html')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.text();
-            })
-            .then(data => {
-                document.getElementById('header').innerHTML = data;
-            })
-            .catch(error => {
-                console.error('Error fetching the header:', error);
-            });
-    });
-</script>
+ 
 <!-- Header End -->
 
 <!-- Content -->
-<body>
  <section class="faq-section">
     <div style="text-align: center; margin-top: 10px;">
         <h1 class="tagline">FAQ</h1>
@@ -42,7 +27,7 @@
         <div class="faq-container">
             <div class="faq-item">
                 <h2 class="faq-question">1. How far in advance should we book you?</h2>
-                <p class="faq-answer">It's recommended to book as soon as possible, typically 6-12 months before your wedding date to ensure availability.</p>
+                <p class="faq-answer">It’s recommended to book as soon as possible, typically 6–12 months before your wedding date to ensure availability.</p>
             </div>
             <div class="faq-item">
                 <h2 class="faq-question">2. What is included in your wedding packages?</h2>
@@ -62,7 +47,6 @@
             </div>
         </div>
     </section>
-</body>
 <!-- Content End -->
 
 <script>
@@ -79,23 +63,7 @@
 <!-- Footer -->
 <div id="footer"></div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch('footer.html')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.text();
-            })
-            .then(data => {
-                document.getElementById('footer').innerHTML = data;
-            })
-            .catch(error => {
-                console.error('Error fetching the footer:', error);
-            });
-    });
-</script>
+ 
 <!-- Footer End -->
 </body>
 </html>

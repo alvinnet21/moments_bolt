@@ -10,7 +10,6 @@
 .slider {
     position: relative;
     max-width: 500px;
-    margin: left;
     overflow: hidden; /* Menghindari gambar meluas keluar */
 }
 
@@ -92,21 +91,7 @@ button {
 .button-container {
     margin-top: 50px;
     margin-bottom: 100px;
-    align-self: middle;
+    align-self: center;
 }
 
-.btn {
-    background-color: #998c7f;
-    color: #fff;
-    padding: 10px 20px;
-    text-decoration: none;
-    font-size: 30px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.btn:hover {
-    background-color: #8d7762;
-}
+/* .btn base styles moved to common.css */

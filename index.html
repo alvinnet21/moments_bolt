@@ -6,31 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Photography Services</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="common.css">
     <link rel="stylesheet" href="1. Home/indexstyle.css">
-    <script src="headerscript.js" defer></script> <!-- Using defer -->
+    <script src="headerscript.js" defer></script>
+    <script src="layout.js" defer></script>
 </head>
 
 <body>
 <!-- Header -->
 <div id="header"></div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch('header.html')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.text();
-            })
-            .then(data => {
-                document.getElementById('header').innerHTML = data;
-            })
-            .catch(error => {
-                console.error('Error fetching the header:', error);
-            });
-    });
-</script>
 <!-- Header End -->
 
 <!-- Content -->
@@ -61,40 +45,22 @@
             </div>
         </div>
         <div class="text-container">
-            <p>“At <strong style="color: #5c5c5c">Moments</strong>, we believe that every 
-                photograph tells a story, our passion lies in preserving the fleeting 
-                moments that define your life’s milestones. 
-                Let Moments help you hold onto your <strong style="color: #5c5c5c">treasured memories forever</strong>.”</p>
+            <p>At <strong style="color: #5c5c5c">Moments</strong>, we believe that every
+                photograph tells a story — our passion lies in preserving the fleeting
+                moments that define your life’s milestones.
+                Let Moments help you hold onto your <strong style="color: #5c5c5c">treasured memories forever</strong>.</p>
         </div>
     </div>
     <div class="button-container">
         <a href="2. services.html" class="btn">Discover Our Services</a>
     </div>
-</div>
+    </div>
 
 <script src="1. Home/indexstyle.js"></script>
 <!-- Content End -->
 
 <!-- Footer -->
 <div id="footer"></div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch('footer.html')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.text();
-            })
-            .then(data => {
-                document.getElementById('footer').innerHTML = data;
-            })
-            .catch(error => {
-                console.error('Error fetching the footer:', error);
-            });
-    });
-</script>
 <!-- Footer End -->
 </body>
 </html>

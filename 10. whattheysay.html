@@ -6,31 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Photography Services</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="common.css">
     <link rel="stylesheet" href="10. What They Say/whattheysay.css">
-    <script src="headerscript.js" defer></script> <!-- Using defer -->
+    <script src="headerscript.js" defer></script>
+    <script src="layout.js" defer></script>
 </head>
 
 <body>
 <!-- Header -->
 <div id="header"></div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch('header.html')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.text();
-            })
-            .then(data => {
-                document.getElementById('header').innerHTML = data;
-            })
-            .catch(error => {
-                console.error('Error fetching the header:', error);
-            });
-    });
-</script>
 <!-- Header End -->
 
 <!-- Content -->
@@ -39,35 +23,35 @@
 <div class="reviewcontent">
 <div class="testimonials">
     <div class="testimonial" style="text-align: left;">
-        <p>“We had the pleasure of having Tonia as our lead photographer for our wedding, 
-            and we couldn’t be happier with the results! From our first consultation to the 
-            last shot of the night, Tonia was professional, attentive, and full of creative ideas. 
-            She made us feel at ease in front of the camera and captured every moment beautifully. 
-            The pictures turned out breathtaking, highlighting not just the big moments but also 
-            the candid smiles and laughter throughout the day. We highly recommend Moments 
-            Photography, thanks to Tonia for making our special day unforgettable!”</p>
+        <p>We had the pleasure of having Tonia as our lead photographer for our wedding,
+            and we couldn’t be happier with the results! From our first consultation to the
+            last shot of the night, Tonia was professional, attentive, and full of creative ideas.
+            She made us feel at ease in front of the camera and captured every moment beautifully.
+            The pictures turned out breathtaking, highlighting not just the big moments but also
+            the candid smiles and laughter throughout the day. We highly recommend Moments
+            Photography, thanks to Tonia for making our special day unforgettable!</p>
         <h3>- Alvin & Stevi -</h3>
     </div>
     <div class="testimonial" style="text-align: right;">
         <div class="space"><br><br></div>
-        <p>“William from Moments Photography was our videographer, and he brought so much 
-            magic to our wedding day! He seamlessly blended into the background, capturing 
-            all the precious moments without being intrusive. His creative eye and storytelling 
-            ability transformed our day into a cinematic masterpiece. Every time we watch the 
-            video, it takes us back to the joy we felt on that day. Thank you, William, for your 
-            incredible work and dedication. We are immensely grateful to have such beautiful 
-            memories to cherish forever!”</p>
+        <p>William from Moments Photography was our videographer, and he brought so much
+            magic to our wedding day! He seamlessly blended into the background, capturing
+            all the precious moments without being intrusive. His creative eye and storytelling
+            ability transformed our day into a cinematic masterpiece. Every time we watch the
+            video, it takes us back to the joy we felt on that day. Thank you, William, for your
+            incredible work and dedication. We are immensely grateful to have such beautiful
+            memories to cherish forever!</p>
         <h3>- Albert & Regina -</h3>
     </div>
     <div class="testimonial" style="text-align: left;">
         <div class="space"><br><br></div>
-        <p>“Yovie was our photographer for our engagement shoot and wedding, and we’re 
-            absolutely thrilled with the experience! Yovie’s passion for photography shines 
-            through in every image. His attention to detail and ability to capture genuine 
-            emotions made us feel completely comfortable while shooting. The photos are stunning, 
-            and we love the way he captured the essence of our love story. If you're looking for 
-            a talented and personable photographer, we highly recommend Yovie and Moments 
-            Photography. Our memories have been beautifully immortalized!”</p>
+        <p>Yovie was our photographer for our engagement shoot and wedding, and we’re
+            absolutely thrilled with the experience! Yovie’s passion for photography shines
+            through in every image. His attention to detail and ability to capture genuine
+            emotions made us feel completely comfortable while shooting. The photos are stunning,
+            and we love the way he captured the essence of our love story. If you’re looking for
+            a talented and personable photographer, we highly recommend Yovie and Moments
+            Photography. Our memories have been beautifully immortalized!</p>
         <h3>- John & Irene -</h3>
         
     </div>
@@ -81,24 +65,6 @@
 
 <!-- Footer -->
 <div id="footer"></div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch('footer.html')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.text();
-            })
-            .then(data => {
-                document.getElementById('footer').innerHTML = data;
-            })
-            .catch(error => {
-                console.error('Error fetching the footer:', error);
-            });
-    });
-</script>
 <!-- Footer End -->
 </body>
 </html>

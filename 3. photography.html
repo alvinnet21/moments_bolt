@@ -6,42 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Photography Services</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="common.css">
     <link rel="stylesheet" href="3. Photography/photographystyle.css">
-    <script src="headerscript.js" defer></script> <!-- Using defer -->
+    <script src="headerscript.js" defer></script>
+    <script src="layout.js" defer></script>
 </head>
 
 <body>
 <!-- Header -->
 <div id="header"></div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch('header.html')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.text();
-            })
-            .then(data => {
-                document.getElementById('header').innerHTML = data;
-            })
-            .catch(error => {
-                console.error('Error fetching the header:', error);
-            });
-    });
-</script>
 <!-- Header End -->
 
 <!-- Content -->
-<body>
     <div class="styled-text">
         <span class="highlight">Tell us</span> your story and we’ll help you capture <em>beautiful memories that lasts forever.</em>
     </div>
     <section class="wedding-section">
         <div class="text-content">
             <h1>Capturing your love story, one frame at a time.</h1>
-            <p>Congratulations on your upcoming wedding! We know this is one of the most special days of your life, and we're thrilled to be a part of it. Our goal is to make your photography experience as seamless, enjoyable, and memorable as possible.</p>
+            <p>Congratulations on your upcoming wedding! We know this is one of the most special days of your life, and we’re thrilled to be a part of it. Our goal is to make your photography experience as seamless, enjoyable, and memorable as possible.</p>
             <p>To make your wedding day as comfortable as possible, we will provide:</p>
             <ul>
                 <li>A relaxed atmosphere</li>
@@ -90,29 +73,10 @@
     <div class="button-container" style="text-align: center;">
         <a href="2. services.html" class="btn">Discover Our Services</a>
     </div>
-</body>
 <!-- Content End -->
 
 <!-- Footer -->
 <div id="footer"></div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch('footer.html')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.text();
-            })
-            .then(data => {
-                document.getElementById('footer').innerHTML = data;
-            })
-            .catch(error => {
-                console.error('Error fetching the footer:', error);
-            });
-    });
-</script>
 <!-- Footer End -->
 </body>
 </html>

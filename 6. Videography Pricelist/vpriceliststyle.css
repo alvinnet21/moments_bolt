@@ -161,23 +161,4 @@
     cursor: pointer;
 }
 
-.button-container {
-    margin-bottom: 50px;
-    align-self: middle;
-}
-
-.btn {
-    background-color: #998c7f;
-    color: #fff;
-    padding: 10px 20px;
-    text-decoration: none;
-    font-size: 30px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.btn:hover {
-    background-color: #8d7762;
-}
+/* .button-container and .btn base styles moved to common.css */
