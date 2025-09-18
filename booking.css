@@ -75,3 +75,78 @@
   .row-span-2 { grid-column: auto; }
 }
 
+/* Admin bookings cards */
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 768px) {
+  .cards { grid-template-columns: 1fr 1fr; }
+}
+
+.admin-card {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+}
+
+.admin-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.service-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: #fff;
+}
+.badge svg {
+  width: 14px;
+  height: 14px;
+  vertical-align: -2px;
+  margin-right: 6px;
+  fill: currentColor;
+}
+.badge-pending { background: #d4a72c; }
+.badge-confirmed { background: #2e7d32; }
+.badge-completed { background: #1565c0; }
+.badge-cancelled { background: #c62828; }
+.badge-default { background: #777; }
+
+/* Role badges */
+.badge-role-photographer { background: #90caf9; color: #0d47a1; }
+.badge-role-videographer { background: #ffcc80; color: #e65100; }
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+@media (max-width: 640px) {
+  .info-grid { grid-template-columns: 1fr; }
+}
+
+.card-actions { margin-top: 10px; }
+
+/* Employees form */
+.emp-form {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+  margin-top: 12px;
+}

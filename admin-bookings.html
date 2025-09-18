@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | Booking Requests</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="common.css" />
+  <link rel="stylesheet" href="booking.css" />
+  <script src="headerscript.js" defer></script>
+  <script src="layout.js" defer></script>
+</head>
+
+<body>
+  <!-- Header -->
+  <div id="header"></div>
+  <!-- Header End -->
+
+  <!-- Content -->
+  <main class="booking-wrapper centered-main">
+    <div class="booking-card" style="width:100%; max-width:1100px;">
+      <header style="text-align:center; margin-bottom: 8px;">
+        <h1 class="tagline" style="color: var(--brand-primary); margin-bottom: 4px;">Admin Dashboard</h1>
+        <div class="helper">Manage your bookings and staff</div>
+      </header>
+
+      <nav class="inline" style="justify-content:center; gap:8px; margin: 12px 0 8px 0;">
+        <a class="btn" style="background: var(--brand-primary); color: #fff;">Booking Requests</a>
+        <a class="btn" href="admin-employees.html">Employees</a>
+      </nav>
+
+      <div id="toast" style="position:fixed; top:16px; right:16px; z-index:50;"></div>
+
+      <section id="filters" style="margin-top:12px;">
+        <div class="form-grid">
+          <div class="form-row">
+            <label for="start_date">From Date</label>
+            <div style="position:relative">
+              <input id="start_date" class="input" type="text" readonly />
+              <div id="cal_start" style="display:none; position:absolute; z-index:20;"></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <label for="end_date">To Date</label>
+            <div style="position:relative">
+              <input id="end_date" class="input" type="text" readonly />
+              <div id="cal_end" style="display:none; position:absolute; z-index:20;"></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <label>&nbsp;</label>
+            <button class="btn" id="load_btn" type="button">Load</button>
+            <div class="helper" id="loading_list" style="display:none;">Loading...</div>
+          </div>
+          <div class="form-row">
+            <label>&nbsp;</label>
+            <a class="btn" href="admin.html">Back to Admin</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="list" style="margin-top:16px;">
+        <div id="empty_state" class="helper" style="display:none; text-align:center; margin:24px 0;"></div>
+        <div id="cards" class="cards"></div>
+        <div id="pagination" class="button-container" style="margin-top:16px;"></div>
+      </section>
+    </div>
+  </main>
+  <!-- Content End -->
+
+  <!-- Footer -->
+  <div id="footer"></div>
+  <!-- Footer End -->
+
+  <script>
+    // Config
+    const CFG = { apiBase: 'http://localhost:8001' };
+    // Utils
+    const pad = (n) => String(n).padStart(2,'0');
+    const toYmd = (d) => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+    const parseYmd = (ymd) => { const [y,m,da] = ymd.split('-').map(Number); return new Date(y, m-1, da); };
+    const compareYmd = (a,b) => a < b ? -1 : (a > b ? 1 : 0);
+    const ymdToUtcSeconds = (ymd) => { const [y,m,d] = ymd.split('-').map(Number); return Math.floor(Date.UTC(y, m-1, d, 0,0,0,0)/1000); };
+    const readCookie = (name) => { const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)'); return m ? decodeURIComponent(m.pop()) : undefined; };
+    function prefixApi(path){ if (path.startsWith('http')) return path; const rel = path.startsWith('/api')?path:('/api'+(path.startsWith('/')?path:'/'+path)); return CFG.apiBase + rel; }
+    async function request(method, path, body){
+      const url = prefixApi(path);
+      const headers = { 'Accept':'application/json','Content-Type':'application/json' };
+      const xsrf = readCookie('XSRF-TOKEN'); if (xsrf) headers['X-XSRF-TOKEN'] = xsrf;
+      const init = { method, headers };
+      if (body !== undefined) init.body = JSON.stringify(body);
+      const res = await fetch(url, init);
+      if (!res.ok) { let t=''; try{t=await res.text()}catch{} throw new Error('API '+method+' '+url+' failed: '+res.status+' '+t); }
+      const ct = res.headers.get('content-type')||''; if (ct.includes('application/json')) return res.json(); return undefined;
+    }
+    function notify(msg, type){
+      const root = document.getElementById('toast'); if (!root) return;
+      const el = document.createElement('div');
+      el.textContent = msg;
+      el.style.background = type==='error' ? '#b00020' : 'var(--brand-primary)';
+      el.style.color = '#fff'; el.style.padding = '10px 12px'; el.style.borderRadius='8px'; el.style.marginTop='8px'; el.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';
+      root.appendChild(el); setTimeout(()=>{ el.remove(); }, 3000);
+    }
+
+    // State
+    let bookings = []; // normalized UI items
+    let employeesMap = {}; // id -> name
+    let dateFilter = (function(){
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      const end = new Date(now.getFullYear(), now.getMonth()+1, 0);
+      return { startDate: toYmd(start), endDate: toYmd(end) };
+    })();
+    let showStartCal = false, showEndCal = false;
+    let currentMonthStart = new Date();
+    let currentMonthEnd = new Date();
+    let currentPage = 1, perPage = 5;
+    let processing = {}; // id -> boolean
+    let loadingList = false;
+
+    // Elements
+    const startInput = document.getElementById('start_date');
+    const endInput = document.getElementById('end_date');
+    const calStart = document.getElementById('cal_start');
+    const calEnd = document.getElementById('cal_end');
+    const loadBtn = document.getElementById('load_btn');
+    const loadingEl = document.getElementById('loading_list');
+    const cardsEl = document.getElementById('cards');
+    const emptyState = document.getElementById('empty_state');
+    const pagination = document.getElementById('pagination');
+
+    function renderFilters(){
+      startInput.value = dateFilter.startDate;
+      endInput.value = dateFilter.endDate;
+    }
+
+    function openCal(which){
+      if (which==='start') { showStartCal=true; calStart.style.display=''; renderCalendar(calStart, currentMonthStart, function(ymd){ dateFilter.startDate = ymd; if (compareYmd(dateFilter.startDate, dateFilter.endDate)===1) dateFilter.endDate = ymd; closeCals(); renderFilters(); currentPage=1; renderTable(); }, 'start'); }
+      else { showEndCal=true; calEnd.style.display=''; renderCalendar(calEnd, currentMonthEnd, function(ymd){ dateFilter.endDate = ymd; if (compareYmd(dateFilter.startDate, dateFilter.endDate)===1) dateFilter.startDate = ymd; closeCals(); renderFilters(); currentPage=1; renderTable(); }, 'end'); }
+      document.addEventListener('mousedown', onOutside);
+      document.addEventListener('keydown', onEsc);
+    }
+    function closeCals(){ showStartCal=false; showEndCal=false; calStart.style.display='none'; calEnd.style.display='none'; document.removeEventListener('mousedown', onOutside); document.removeEventListener('keydown', onEsc); }
+    function onOutside(e){ if (!calStart.contains(e.target) && !calEnd.contains(e.target) && e.target!==startInput && e.target!==endInput) closeCals(); }
+    function onEsc(e){ if (e.key==='Escape') closeCals(); }
+
+    function renderCalendar(container, monthDate, onSelect, mode){
+      const year = monthDate.getFullYear(); const month = monthDate.getMonth();
+      const first = new Date(year, month, 1); const startDay = first.getDay();
+      const dim = new Date(year, month+1, 0).getDate();
+      let html = '';
+      html += '<div class="inline" style="justify-content:space-between;align-items:center;margin-bottom:8px">'+
+        '<button type="button" class="btn" data-cal="prev">&lt;</button>'+
+        '<div style="font-weight:700">'+ monthDate.toLocaleString('en-US',{month:'long',year:'numeric'}) +'</div>'+
+        '<button type="button" class="btn" data-cal="next">&gt;</button>'+
+      '</div>';
+      html += '<div class="inline" style="justify-content:space-between;font-weight:600">'+ ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>'<div style="width:36px;text-align:center">'+d+'</div>').join('') +'</div>';
+      html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:6px">';
+      for (let i=0;i<startDay;i++) html += '<div></div>';
+      for (let d=1; d<=dim; d++){
+        const ymd = toYmd(new Date(year, month, d));
+        let disabled = false;
+        if (mode==='start' && dateFilter.endDate) {
+          // disable dates after To Date
+          disabled = compareYmd(ymd, dateFilter.endDate)===1;
+        }
+        if (mode==='end' && dateFilter.startDate) {
+          // disable dates before From Date
+          disabled = compareYmd(ymd, dateFilter.startDate)===-1;
+        }
+        // range highlight
+        const inRange = compareYmd(ymd, dateFilter.startDate) >= 0 && compareYmd(ymd, dateFilter.endDate) <= 0;
+        const isStart = ymd === dateFilter.startDate;
+        const isEnd = ymd === dateFilter.endDate;
+        const bg = inRange ? '#f6efe9' : '#fff';
+        const radius = isStart ? '6px 0 0 6px' : (isEnd ? '0 6px 6px 0' : '6px');
+        html += '<button type="button" class="cal-day" data-day="'+ymd+'" '+(disabled?'disabled':'')+' style="padding:6px 0;border:1px solid #eee;border-radius:'+radius+';background:'+bg+'">'+d+'</button>';
+      }
+      html += '</div>';
+      container.innerHTML = html;
+      const prev = container.querySelector('[data-cal="prev"]');
+      const next = container.querySelector('[data-cal="next"]');
+      prev.addEventListener('click', ()=> { monthDate.setMonth(monthDate.getMonth()-1); renderCalendar(container, monthDate, onSelect, mode); });
+      next.addEventListener('click', ()=> { monthDate.setMonth(monthDate.getMonth()+1); renderCalendar(container, monthDate, onSelect, mode); });
+      container.querySelectorAll('.cal-day').forEach(btn=> btn.addEventListener('click', ()=> onSelect(btn.getAttribute('data-day'))));
+    }
+
+    function inRange(ymd, start, end){ return compareYmd(ymd, start) >= 0 && compareYmd(ymd, end) <= 0; }
+
+    function toYmdSafe(val){
+      if (typeof val === 'number' && isFinite(val)) return toYmd(new Date(val * 1000));
+      if (typeof val === 'string') {
+        // try parse numeric string seconds
+        const asNum = Number(val);
+        if (isFinite(asNum)) return toYmd(new Date(asNum * 1000));
+        // assume already ymd
+        return val;
+      }
+      return '';
+    }
+    function mapApiBooking(item){
+      // Expecting server fields; adapt as needed
+      // Example assumes snake_case fields
+      const statusMap = { PENDING:'pending', ACCEPTED:'confirmed', REJECTED:'cancelled', FINISHED:'completed', pending:'pending', accepted:'confirmed', rejected:'cancelled', finished:'completed' };
+      return {
+        id: String(item.id ?? ''),
+        serviceType: (item.service_type === 'VIDEOGRAPHER' ? 'videographer' : 'photographer'),
+        employeeId: String(item.employee_id ?? ''),
+        date: item.date_ymd || toYmdSafe(item.date) || '',
+        time: (item.time_slot === 'AFTERNOON' ? 'afternoon' : (item.time_slot === 'FULL_DAY' ? 'fullday' : 'morning')),
+        customerName: item.customer_name || '',
+        phone: item.customer_phone || '',
+        email: item.customer_email || '',
+        status: statusMap[item.status] || 'pending',
+        createdAt: item.created_at || ''
+      };
+    }
+
+    function getEmployeeName(empId){
+      if (!empId) return 'Employee not found';
+      const m = employeesMap[empId];
+      return m || 'Employee not found';
+    }
+    function statusIconSvg(status){
+      // Simple inline SVGs, sized via CSS (.badge svg)
+      const circle = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" /></svg>';
+      const check = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2l-3.5-3.5L4 14.2l5 5 11-11-1.5-1.5z"/></svg>';
+      const xmark = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.3 5.71L12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.71 2.88 18.3 9.17 12 2.88 5.71 4.29 4.29 10.59 10.6l6.3-6.3z"/></svg>';
+      const alert = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v2h2v-2zm0-8h-2v6h2V10z"/></svg>';
+      if (status==='pending') return alert;
+      if (status==='confirmed') return check;
+      if (status==='completed') return circle;
+      if (status==='cancelled') return xmark;
+      return circle;
+    }
+    function getStatusMeta(status){
+      const map = {
+        pending: { cls:'badge badge-pending', svg: statusIconSvg('pending'), label:'Pending' },
+        confirmed: { cls:'badge badge-confirmed', svg: statusIconSvg('confirmed'), label:'Confirmed' },
+        completed: { cls:'badge badge-completed', svg: statusIconSvg('completed'), label:'Completed' },
+        cancelled: { cls:'badge badge-cancelled', svg: statusIconSvg('cancelled'), label:'Cancelled' },
+      };
+      return map[status] || { cls:'badge badge-default', svg: statusIconSvg('unknown'), label: status };
+    }
+    function getTimeLabel(time){
+      if (time==='morning') return 'Morning (08:00 - 12:00)';
+      if (time==='afternoon') return 'Afternoon (13:00 - 17:00)';
+      return 'Full Day (08:00 - 17:00)';
+    }
+    function formatDate(ymd){
+      try {
+        const d = parseYmd(ymd);
+        return d.toLocaleDateString('en-US',{ day:'numeric', month:'long', year:'numeric' });
+      } catch { return ymd; }
+    }
+
+    function renderTable(){
+      const rows = getFiltered();
+      const totalPages = Math.max(1, Math.ceil(rows.length / perPage));
+      if (currentPage > totalPages) currentPage = totalPages;
+      const startIdx = (currentPage - 1) * perPage;
+      const slice = rows.slice(startIdx, startIdx + perPage);
+      cardsEl.innerHTML = '';
+      // Empty states
+      if (bookings.length === 0){ emptyState.style.display=''; emptyState.textContent = 'No booking requests yet. Customer bookings will appear here.'; pagination.innerHTML=''; return; }
+      if (rows.length === 0){ emptyState.style.display=''; emptyState.textContent = 'No results found. Try adjusting your date filters.'; pagination.innerHTML=''; return; }
+      emptyState.style.display='none';
+      slice.forEach(b => {
+        const card = document.createElement('div'); card.className = 'admin-card';
+        const meta = getStatusMeta(b.status);
+        const empName = getEmployeeName(b.employeeId);
+        const icon = b.serviceType === 'videographer' ? '🎬' : '📷';
+        const busy = !!processing[b.id];
+        card.innerHTML = 
+          '<div class="admin-card-header">'
+          +  '<div class="service-chip">'+icon+' <span>'+b.customerName+'</span></div>'
+          +  '<span class="'+meta.cls+'">'+meta.svg+' '+meta.label+'</span>'
+          +'</div>'
+          +'<div class="helper" style="margin-bottom:8px;">'+ b.serviceType + ' - ' + empName + '</div>'
+          +'<div class="info-grid">'
+          +  '<div><strong>Date</strong><div>'+formatDate(b.date)+'</div></div>'
+          +  '<div><strong>Time</strong><div>'+getTimeLabel(b.time)+'</div></div>'
+          +  '<div><strong>Phone</strong><div>'+ (b.phone || '-') +'</div></div>'
+          +  '<div><strong>Email</strong><div>'+ (b.email || '-') +'</div></div>'
+          +'</div>'
+          +'<div class="card-actions">'+renderActionsHtml(b)+'</div>';
+        cardsEl.appendChild(card);
+        bindActionButtons(card, b);
+      });
+      renderPagination(totalPages);
+    }
+
+    function renderActionsHtml(b){
+      const busy = !!processing[b.id];
+      function btn(label, action, color){ return '<button class="btn" aria-label="'+label+'" data-action="'+action+'" '+(busy?'disabled':'')+' style="margin-right:6px;'+(color?('background:'+color+';'):'')+'">'+(busy?'Processing...':label)+'</button>'; }
+      if (b.status==='pending') return btn('Confirm','confirm','var(--brand-primary)') + btn('Cancel','cancel','#c62828');
+      if (b.status==='confirmed') return btn('Finish','complete','#1565c0');
+      return '<span class="helper">No actions</span>';
+    }
+    function bindActionButtons(rootEl, b){
+      const map = { confirm:'ACCEPTED', cancel:'REJECTED', complete:'FINISHED' };
+      rootEl.querySelectorAll('button[data-action]').forEach(btn=>{
+        btn.addEventListener('click', async function(){
+          const act = btn.getAttribute('data-action');
+          const target = map[act]; if (!target) return;
+          // Validate transitions
+          const valid = (b.status==='pending' && (target==='ACCEPTED' || target==='REJECTED')) || (b.status==='confirmed' && target==='FINISHED');
+          if (!valid) { notify('Invalid transition for this booking','error'); return; }
+          try {
+            processing[b.id] = true; renderTable();
+            await request('PUT', '/books/'+encodeURIComponent(b.id), { status: target });
+            // reflect locally
+            if (target==='ACCEPTED') b.status='confirmed';
+            if (target==='REJECTED') b.status='cancelled';
+            if (target==='FINISHED') b.status='completed';
+            notify('Status updated','ok');
+          } catch(e){
+            console.error(e); notify('Failed to update status','error');
+          } finally {
+            delete processing[b.id]; renderTable();
+          }
+        });
+      });
+    }
+
+    function renderPagination(totalPages){
+      let html = '';
+      // Halaman X dari Y label
+      html += '<div class="helper" style="margin-bottom:8px;">Halaman '+currentPage+' dari '+totalPages+'</div>';
+      if (totalPages <= 1){ pagination.innerHTML = html; return; }
+      html += '<button class="btn" data-page="prev" '+(currentPage===1?'disabled':'')+'>Prev</button>';
+      for (let p=1;p<=totalPages;p++){
+        html += '<button class="btn" data-page="'+p+'" '+(p===currentPage?'style="background:var(--brand-primary);color:#fff;"':'')+'>'+p+'</button>';
+      }
+      html += '<button class="btn" data-page="next" '+(currentPage===totalPages?'disabled':'')+'>Next</button>';
+      pagination.innerHTML = html;
+    pagination.querySelectorAll('button[data-page]').forEach(btn=>{
+      btn.addEventListener('click', function(){
+        const val = btn.getAttribute('data-page');
+        const total = totalPages;
+        if (val==='prev' && currentPage>1) currentPage--;
+        else if (val==='next' && currentPage<total) currentPage++;
+        else if (!isNaN(Number(val))) currentPage = Number(val);
+        if (serverMeta) { loadList(); } else { renderTable(); }
+      });
+    });
+    }
+
+    function getFiltered(){
+      return bookings.filter(b => inRange(b.date, dateFilter.startDate, dateFilter.endDate));
+    }
+
+    // Load list
+    async function tryEndpoints(paths){
+      let lastErr;
+      for (const p of paths){
+        try { return await request('GET', p); } catch(e){ lastErr = e; }
+      }
+      throw lastErr || new Error('All endpoints failed');
+    }
+
+    async function loadList(){
+      loadingList = true; loadingEl.style.display=''; loadBtn.disabled = true;
+      try{
+        const startSec = ymdToUtcSeconds(dateFilter.startDate);
+        const endSec = ymdToUtcSeconds(dateFilter.endDate) + 86399; // inclusive end-of-day
+        const path = '/books?start_date='+startSec+'&end_date='+endSec+'&page='+currentPage;
+        const resp = await request('GET', path);
+        const arr = Array.isArray(resp && resp.data) ? resp.data : (Array.isArray(resp) ? resp : []);
+        bookings = arr.map(mapApiBooking);
+        serverMeta = resp && resp.meta ? resp.meta : null;
+        if (serverMeta && serverMeta.per_page) perPage = serverMeta.per_page;
+        renderTable();
+        notify('Loaded booking requests','ok');
+      } catch(e){
+        console.error(e);
+        notify('Failed to load booking requests','error');
+        // Mock fallback
+        if (window.BOOKING_USE_MOCKS){
+          bookings = [
+            { id:'bk_001', serviceType:'photographer', employeeId:'1', date: toYmd(new Date()), time:'morning', customerName:'Jane', phone:'08123', email:'jane@example.com', status:'pending', createdAt: new Date().toISOString() },
+            { id:'bk_002', serviceType:'videographer', employeeId:'2', date: toYmd(new Date()), time:'afternoon', customerName:'Bob', phone:'08124', email:'bob@example.com', status:'confirmed', createdAt: new Date().toISOString() },
+          ];
+          serverMeta = null; currentPage = 1; renderTable();
+        } else {
+          serverMeta = null; bookings = []; renderTable();
+        }
+      } finally {
+        loadingList = false; loadingEl.style.display='none'; loadBtn.disabled = false;
+      }
+    }
+
+    async function loadEmployeesMap(){
+      try {
+        const resp = await request('GET', '/employees?page=1&per_page=1000');
+        const arr = Array.isArray(resp && resp.data) ? resp.data : [];
+        const mapPos = function (pos) {
+          const p = (pos || '').toUpperCase();
+          if (p.indexOf('PHOTOGRAPHER') !== -1) return 'photographer';
+          if (p.indexOf('VIDEOGRAPHER') !== -1) return 'videographer';
+          return undefined;
+        };
+        employeesMap = {};
+        arr.forEach(function(e){ employeesMap[String(e.id)] = e.name || ('Employee '+e.id); });
+      } catch(e){
+        console.warn('Failed to load employees map', e);
+        employeesMap = {};
+      }
+    }
+
+    // Wire events
+    startInput.addEventListener('click', ()=>{ openCal('start'); });
+    endInput.addEventListener('click', ()=>{ openCal('end'); });
+    loadBtn.addEventListener('click', ()=>{ currentPage = 1; serverMeta = null; loadList(); });
+
+    // Init
+    renderFilters();
+    renderTable();
+    loadEmployeesMap();
+  </script>
+</body>
+
+</html>

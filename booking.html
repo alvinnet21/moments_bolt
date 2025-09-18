@@ -2,460 +2,479 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booking | Moments</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="common.css">
-    <link rel="stylesheet" href="booking.css">
-    <script src="headerscript.js" defer></script>
-    <script src="layout.js" defer></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function(){
-        try {
-          var hasReact = typeof window.React !== 'undefined';
-          var hasBabel = typeof window.Babel !== 'undefined';
-          if (!hasReact || !hasBabel) {
-            var root = document.getElementById('booking-root');
-            if (root) {
-              root.innerHTML = '<div class="helper">Booking form requires React and Babel scripts. Please ensure internet is available or provide local vendor files. I can vendor local builds on request.</div>';
-            }
-          }
-        } catch(e) { /* noop */ }
-      });
-    </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Booking | Moments</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="common.css" />
+  <link rel="stylesheet" href="booking.css" />
+  <script src="headerscript.js" defer></script>
+  <script src="layout.js" defer></script>
 </head>
 
 <body>
-<!-- Header -->
-<div id="header"></div>
-<!-- Header End -->
+  <!-- Header -->
+  <div id="header"></div>
+  <!-- Header End -->
 
-<!-- Content -->
-<main class="booking-wrapper">
-  <div class="booking-card">
-    <h1 class="tagline" style="color: var(--brand-primary);">Booking</h1>
-    <div id="booking-root"></div>
-  </div>
-</main>
-<!-- Content End -->
-
-<!-- Footer -->
-<div id="footer"></div>
-<!-- Footer End -->
-
-<script type="text/babel" data-presets="typescript,react">
-// Types
-type ServiceType = 'photographer' | 'videographer';
-type UiSlot = 'MORNING' | 'AFTERNOON' | 'FULL_DAY';
-type UiSlotLower = 'morning' | 'afternoon' | 'fullday';
-
-type FormData = {
-  serviceType: ServiceType;
-  employeeId: string;
-  date: '' | string; // YYYY-MM-DD
-  time: '' | UiSlotLower;
-  customerName: string;
-  phone: string;
-  email: string;
-};
-
-type Availability = {
-  dates: string[];
-  byDate: Record<string, UiSlot[]>;
-};
-
- type Employee = { id: number | string; name: string; service_type?: ServiceType };
- type EmployeeApi = { id: number; name: string; position?: string; email?: string; phone?: string };
-
-// Request helper
-const CONFIG = {
-  token: (window as any).BOOKING_AUTH?.token as string | undefined,
-  apiKey: (window as any).BOOKING_AUTH?.apiKey as string | undefined,
-  withCredentials: (window as any).BOOKING_AUTH?.withCredentials as boolean | undefined,
-};
-
-function prefixApi(path: string) {
-  return path.startsWith('/api') ? path : (path.startsWith('http') ? path : '/api' + (path.startsWith('/') ? path : '/' + path));
-}
-
-function readCookie(name: string): string | undefined {
-  const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
-  return m ? decodeURIComponent(m.pop() as string) : undefined;
-}
-
-async function request<T>(method: 'GET'|'POST'|'PUT'|'DELETE', path: string, body?: unknown): Promise<T> {
-  const url = prefixApi(path);
-  const headers: Record<string,string> = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-  };
-  if (CONFIG.token) headers['Authorization'] = `Bearer ${CONFIG.token}`;
-  if (CONFIG.apiKey) headers['X-API-KEY'] = CONFIG.apiKey;
-  const xsrf = readCookie('XSRF-TOKEN');
-  if (xsrf) headers['X-XSRF-TOKEN'] = xsrf;
-
-  const init: RequestInit = {
-    method,
-    headers,
-  };
-  if (CONFIG.withCredentials) init.credentials = 'include';
-  if (body !== undefined) init.body = JSON.stringify(body);
-
-  const res = await fetch(url, init);
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`API ${method} ${url} failed: ${res.status} ${text}`);
-  }
-  const ct = res.headers.get('content-type') || '';
-  if (ct.includes('application/json')) return res.json();
-  // Fallback if server returns empty
-  return undefined as unknown as T;
-}
-
-// Helpers
-const pad = (n: number) => String(n).padStart(2,'0');
-const toYmd = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-function ymdToUtcSeconds(ymd: string): number {
-  const [y,m,d] = ymd.split('-').map(Number);
-  return Math.floor(Date.UTC(y, (m-1), d, 0,0,0,0)/1000);
-}
-function slotLowerToUpper(s: UiSlotLower): UiSlot {
-  switch(s){
-    case 'morning': return 'MORNING';
-    case 'afternoon': return 'AFTERNOON';
-    case 'fullday': return 'FULL_DAY';
-  }
-}
-function normalizeAvailability(resp: any): Availability {
-  const byDate: Record<string, UiSlot[]> = {};
-  const arr = Array.isArray(resp?.data) ? resp.data : [];
-  for (const item of arr) {
-    const secs = Number(item?.date);
-    if (!Number.isFinite(secs)) continue;
-    const ymd = toYmd(new Date(secs * 1000));
-    const slots: UiSlot[] = Array.isArray(item?.available_slots) ? item.available_slots.filter((s: any)=>['MORNING','AFTERNOON','FULL_DAY'].includes(s)) : [];
-    if (slots.length) byDate[ymd] = slots as UiSlot[];
-  }
-  return { dates: Object.keys(byDate).sort(), byDate };
-}
-
-// UI Bits
-function ToggleTabs({ value, onChange }: { value: ServiceType; onChange: (v: ServiceType)=>void }){
-  return (
-    <div className="inline" role="tablist" aria-label="Service type">
-      {(['photographer','videographer'] as ServiceType[]).map(v => (
-        <button type="button" key={v} role="tab" aria-selected={value===v}
-          onClick={()=>onChange(v)}
-          className="btn"
-          style={{
-            backgroundColor: value===v ? 'var(--brand-primary)' : '#ddd',
-            color: value===v ? '#fff' : '#333',
-          }}>
-          {v === 'photographer' ? 'Photographer' : 'Videographer'}
-        </button>
-      ))}
+  <!-- Content -->
+  <main class="booking-wrapper">
+    <div class="booking-card">
+      <h1 class="tagline" style="color: var(--brand-primary);">Booking</h1>
+      <div id="booking-root"></div>
     </div>
-  );
-}
+  </main>
+  <!-- Content End -->
 
-function WeekHeader(){
-  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  return <div className="inline" style={{ justifyContent: 'space-between', fontWeight: 600 }}>{days.map(d=> <div key={d} style={{ width: 36, textAlign: 'center' }}>{d}</div>)}</div>;
-}
+  <!-- Footer -->
+  <div id="footer"></div>
+  <!-- Footer End -->
 
-function CalendarPopover({
-  currentMonth,
-  setCurrentMonth,
-  availableDatesSet,
-  onSelect,
-  onClose,
-}: { currentMonth: Date; setCurrentMonth: (d: Date)=>void; availableDatesSet: Set<string>; onSelect: (ymd:string)=>void; onClose: ()=>void }){
-  const ref = React.useRef<HTMLDivElement>(null);
-  React.useEffect(()=>{
-    const onDown = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) onClose(); };
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return ()=>{ document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
-  },[onClose]);
+  <script>
+    // Optional config
+    const CONFIG = {
+      token: (window.BOOKING_AUTH && window.BOOKING_AUTH.token) || undefined,
+      apiKey: (window.BOOKING_AUTH && window.BOOKING_AUTH.apiKey) || undefined,
+      withCredentials: (window.BOOKING_AUTH && window.BOOKING_AUTH.withCredentials) || false,
+      useMocks: !!window.BOOKING_USE_MOCKS,
+      apiBase: 'http://localhost:8001'
+    };
 
-  const year = currentMonth.getFullYear();
-  const month = currentMonth.getMonth();
-  const firstOfMonth = new Date(year, month, 1);
-  const startDay = firstOfMonth.getDay();
-  const daysInMonth = new Date(year, month+1, 0).getDate();
-  const grid: (Date|null)[] = [];
-  for (let i=0;i<startDay;i++) grid.push(null);
-  for (let d=1; d<=daysInMonth; d++) grid.push(new Date(year, month, d));
+    // Request helper
+    function prefixApi(path) {
+      if (path.startsWith('http')) return path;
+      const rel = path.startsWith('/api') ? path : ('/api' + (path.startsWith('/') ? path : '/' + path));
+      return (CONFIG.apiBase || '') + rel;
+    }
+    function readCookie(name) {
+      const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+      return m ? decodeURIComponent(m.pop()) : undefined;
+    }
+    async function request(method, path, body) {
+      const url = prefixApi(path);
+      const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json' };
+      if (CONFIG.token) headers['Authorization'] = 'Bearer ' + CONFIG.token;
+      if (CONFIG.apiKey) headers['X-API-KEY'] = CONFIG.apiKey;
+      const xsrf = readCookie('XSRF-TOKEN');
+      if (xsrf) headers['X-XSRF-TOKEN'] = xsrf;
+      const init = { method, headers };
+      if (CONFIG.withCredentials) init.credentials = 'include';
+      if (body !== undefined) init.body = JSON.stringify(body);
+      const res = await fetch(url, init);
+      if (!res.ok) {
+        let text = '';
+        try { text = await res.text(); } catch {}
+        throw new Error('API ' + method + ' ' + url + ' failed: ' + res.status + ' ' + text);
+      }
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('application/json')) return res.json();
+      return undefined;
+    }
+    window.BookingRequest = { request };
 
-  return (
-    <div role="dialog" aria-label="Calendar" ref={ref} style={{ position:'absolute', zIndex: 20, background:'#fff', border:'1px solid #eee', borderRadius:8, padding:12, boxShadow:'0 8px 24px rgba(0,0,0,0.12)' }}>
-      <div className="inline" style={{ justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-        <button type="button" aria-label="Previous month" className="btn" onClick={()=> setCurrentMonth(new Date(year, month-1, 1))}>&lt;</button>
-        <div style={{ fontWeight:700 }}>{currentMonth.toLocaleString('en-US', { month:'long', year:'numeric' })}</div>
-        <button type="button" aria-label="Next month" className="btn" onClick={()=> setCurrentMonth(new Date(year, month+1, 1))}>&gt;</button>
-      </div>
-      <WeekHeader />
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:6, marginTop:6 }}>
-        {grid.map((d, i)=>{
-          if (!d) return <div key={i} />;
-          const ymd = toYmd(d);
-          const enabled = availableDatesSet.has(ymd);
-          return (
-            <button key={i} type="button" disabled={!enabled} onClick={()=> onSelect(ymd)}
-              style={{ padding:'6px 0', border:'1px solid #eee', borderRadius:6, background: enabled ? '#fff' : '#f2f2f2', cursor: enabled ? 'pointer' : 'not-allowed' }}>
-              {d.getDate()}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+    // Utils
+    const pad = (n) => String(n).padStart(2, '0');
+    const toYmd = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    function ymdToUtcSeconds(ymd) {
+      const parts = ymd.split('-').map(Number);
+      return Math.floor(Date.UTC(parts[0], parts[1] - 1, parts[2], 0, 0, 0, 0) / 1000);
+    }
+    function slotLowerToUpper(s) {
+      if (s === 'morning') return 'MORNING';
+      if (s === 'afternoon') return 'AFTERNOON';
+      return 'FULL_DAY';
+    }
+    function normalizeAvailability(resp) {
+      const byDate = {};
+      const arr = Array.isArray(resp && resp.data) ? resp.data : [];
+      for (const item of arr) {
+        const secs = Number(item && item.date);
+        if (!Number.isFinite(secs)) continue;
+        const ymd = toYmd(new Date(secs * 1000));
+        const slots = Array.isArray(item && item.available_slots) ? item.available_slots.filter(function (s) { return s === 'MORNING' || s === 'AFTERNOON' || s === 'FULL_DAY'; }) : [];
+        if (slots.length) byDate[ymd] = slots;
+      }
+      return { dates: Object.keys(byDate).sort(), byDate: byDate };
+    }
+    window.BookingUtils = { toYmd, ymdToUtcSeconds, slotLowerToUpper, normalizeAvailability };
 
-function FieldRow(props: { id?: string; label: string; children: React.ReactNode; className?: string; helper?: string; error?: string }){
-  const { id, label, children, className, helper, error } = props;
-  return (
-    <div className={"form-row " + (className ?? '')}>
-      <label htmlFor={id}>{label}</label>
-      {children}
-      {helper && <div className="helper">{helper}</div>}
-      {error && <div className="error">{error}</div>}
-    </div>
-  );
-}
+    // Build UI
+    document.addEventListener('DOMContentLoaded', function () {
+      var root = document.getElementById('booking-root');
+      if (!root) return;
 
-function BookingApp(){
-  const [formData, setFormData] = React.useState<FormData>({
-    serviceType: 'photographer', employeeId: '', date: '', time: '', customerName: '', phone: '', email: ''
-  });
-  const [employees, setEmployees] = React.useState<Employee[]>([]);
-  const [availability, setAvailability] = React.useState<Availability>({ dates: [], byDate: {} });
-  const [loadingAvail, setLoadingAvail] = React.useState(false);
-  const [submitting, setSubmitting] = React.useState(false);
-  const [showCalendar, setShowCalendar] = React.useState(false);
-  const [currentMonth, setCurrentMonth] = React.useState(new Date());
-  const [errors, setErrors] = React.useState<Record<string,string>>({});
-  const dateInputRef = React.useRef<HTMLInputElement>(null);
+      root.innerHTML = '\
+      <form id="booking-form" novalidate>\
+        <div class="form-grid">\
+          <div class="form-row row-span-2">\
+            <label>Service Type</label>\
+            <div class="inline" id="service-toggle">\
+              <button type="button" class="btn" data-service="photographer">Photographer</button>\
+              <button type="button" class="btn" data-service="videographer">Videographer</button>\
+            </div>\
+          </div>\
+          <div class="form-row">\
+            <label for="employee">Employee</label>\
+            <select id="employee" class="select">\
+              <option value="" disabled selected>Select photographer</option>\
+            </select>\
+            <div class="helper" id="employee-helper" style="display:none;">Loading availability...</div>\
+            <div class="error" id="employee-error" style="display:none;"></div>\
+          </div>\
+          <div class="form-row">\
+            <label for="date">Date</label>\
+            <div style="position:relative">\
+              <input id="date" class="input" type="text" readonly placeholder="Select an employee first" />\
+              <div id="calendar-pop" style="display:none; position:absolute; z-index:20;"></div>\
+            </div>\
+            <div class="error" id="date-error" style="display:none;"></div>\
+          </div>\
+          <div class="form-row">\
+            <label>Time Slot</label>\
+            <div class="inline" id="time-slots"></div>\
+            <div class="helper" id="time-helper"></div>\
+            <div class="error" id="time-error" style="display:none;"></div>\
+          </div>\
+          <div class="divider row-span-2"></div>\
+          <div class="form-row row-span-2">\
+            <label for="customer_name">Full Name</label>\
+            <input id="customer_name" class="input" type="text" placeholder="Your full name" />\
+            <div class="error" id="name-error" style="display:none;"></div>\
+          </div>\
+          <div class="form-row">\
+            <label for="customer_phone">Phone Number</label>\
+            <input id="customer_phone" class="input" type="tel" placeholder="Digits only" />\
+            <div class="error" id="phone-error" style="display:none;"></div>\
+          </div>\
+          <div class="form-row">\
+            <label for="customer_email">Email</label>\
+            <input id="customer_email" class="input" type="email" placeholder="you@example.com" />\
+            <div class="error" id="email-error" style="display:none;"></div>\
+          </div>\
+          <div class="row-span-2 button-container">\
+            <button type="submit" class="btn" id="submit-btn">Submit Booking Request</button>\
+          </div>\
+        </div>\
+      </form>';
 
-  // Employees load (simple paging)
-  React.useEffect(()=>{
-    (async () => {
-      try {
-        const resp = await request<any>('GET', '/employees?page=1&per_page=1000');
-        const data: EmployeeApi[] = Array.isArray(resp?.data) ? resp.data : [];
-        const mapPos = (pos?: string): ServiceType | undefined => {
-          const p = (pos || '').toUpperCase();
-          if (p.includes('PHOTOGRAPHER')) return 'photographer';
-          if (p.includes('VIDEOGRAPHER')) return 'videographer';
-          return undefined;
-        };
-        const list: Employee[] = data.map(e => ({ id: e.id, name: e.name, service_type: mapPos(e.position) }));
-        setEmployees(list);
-      } catch (e) {
-        console.error('Load employees failed', e);
-        const useMocks = (window as any).BOOKING_USE_MOCKS;
-        if (useMocks) {
-          const mock = { data: [
-            { id: 1, name: 'Alice', position: 'PHOTOGRAPHER', email: 'alice@example.com', phone: '08123' },
-            { id: 2, name: 'Bob', position: 'VIDEOGRAPHER', email: 'bob@example.com', phone: '08124' },
-          ] };
-          const mapPos = (pos?: string): ServiceType | undefined => {
-            const p = (pos || '').toUpperCase();
-            if (p.includes('PHOTOGRAPHER')) return 'photographer';
-            if (p.includes('VIDEOGRAPHER')) return 'videographer';
+      // State
+      var formData = { serviceType: 'photographer', employeeId: '', date: '', time: '', customerName: '', phone: '', email: '' };
+      var employees = [];
+      var availability = { dates: [], byDate: {} };
+      var currentMonth = new Date();
+      var loadingAvail = false, submitting = false;
+      var abortCtrl = null;
+
+      // Elements
+      var toggleWrap = document.getElementById('service-toggle');
+      var employeeSelect = document.getElementById('employee');
+      var employeeHelper = document.getElementById('employee-helper');
+      var employeeError = document.getElementById('employee-error');
+      var dateInput = document.getElementById('date');
+      var calendarPop = document.getElementById('calendar-pop');
+      var dateError = document.getElementById('date-error');
+      var timeSlots = document.getElementById('time-slots');
+      var timeHelper = document.getElementById('time-helper');
+      var timeError = document.getElementById('time-error');
+      var nameInput = document.getElementById('customer_name');
+      var phoneInput = document.getElementById('customer_phone');
+      var emailInput = document.getElementById('customer_email');
+      var nameError = document.getElementById('name-error');
+      var phoneError = document.getElementById('phone-error');
+      var emailError = document.getElementById('email-error');
+      var submitBtn = document.getElementById('submit-btn');
+      var formEl = document.getElementById('booking-form');
+
+      // Utils UI
+      function setBtnSelected(btn, sel) {
+        if (sel) {
+          btn.style.backgroundColor = 'var(--brand-primary)';
+          btn.style.color = '#fff';
+        } else {
+          btn.style.backgroundColor = '#ddd';
+          btn.style.color = '#333';
+        }
+      }
+
+      function updateToggle() {
+        var btns = toggleWrap.querySelectorAll('button[data-service]');
+        btns.forEach(function (b) { setBtnSelected(b, b.getAttribute('data-service') === formData.serviceType); });
+        updateEmployeePlaceholder();
+      }
+
+      function updateEmployeePlaceholder() {
+        var opt0 = employeeSelect.querySelector('option[value=""]');
+        if (opt0) {
+          var text = 'Select ' + (formData.serviceType === 'photographer' ? 'photographer' : 'videographer');
+          if (filteredEmployees().length === 0) text = 'No ' + (formData.serviceType === 'photographer' ? 'photographers' : 'videographers') + ' available';
+          opt0.textContent = text;
+        }
+      }
+
+      function filteredEmployees() {
+        return employees.filter(function (e) { return !e.service_type || e.service_type === formData.serviceType; });
+      }
+
+      function populateEmployees() {
+        var list = filteredEmployees();
+        employeeSelect.innerHTML = '';
+        var opt0 = document.createElement('option');
+        opt0.value = '';
+        opt0.disabled = true; opt0.selected = true;
+        opt0.textContent = list.length ? ('Select ' + (formData.serviceType === 'photographer' ? 'photographer' : 'videographer')) : ('No ' + (formData.serviceType === 'photographer' ? 'photographers' : 'videographers') + ' available');
+        employeeSelect.appendChild(opt0);
+        list.forEach(function (e) {
+          var opt = document.createElement('option');
+          opt.value = String(e.id);
+          opt.textContent = e.name;
+          employeeSelect.appendChild(opt);
+        });
+      }
+
+      function setLoadingAvail(v) {
+        loadingAvail = v;
+        employeeHelper.style.display = (v && formData.employeeId) ? '' : 'none';
+      }
+
+      function clearErrors(keys) {
+        if (!keys || keys.includes('employeeId')) { employeeError.style.display = 'none'; }
+        if (!keys || keys.includes('date')) { dateError.style.display = 'none'; }
+        if (!keys || keys.includes('time')) { timeError.style.display = 'none'; }
+        if (!keys || keys.includes('customerName')) { nameError.style.display = 'none'; }
+        if (!keys || keys.includes('phone')) { phoneError.style.display = 'none'; }
+        if (!keys || keys.includes('email')) { emailError.style.display = 'none'; }
+      }
+
+      function showError(key, msg) {
+        var map = { employeeId: employeeError, date: dateError, time: timeError, customerName: nameError, phone: phoneError, email: emailError };
+        var el = map[key];
+        if (el) { el.textContent = msg; el.style.display = msg ? '' : 'none'; }
+      }
+
+      function renderCalendar() {
+        var year = currentMonth.getFullYear();
+        var month = currentMonth.getMonth();
+        var first = new Date(year, month, 1);
+        var startDay = first.getDay();
+        var daysInMonth = new Date(year, month + 1, 0).getDate();
+        var html = '';
+        html += '<div class="inline" style="justify-content:space-between;align-items:center;margin-bottom:8px">' +
+          '<button type="button" class="btn" data-cal="prev" aria-label="Previous month">&lt;</button>' +
+          '<div style="font-weight:700">' + currentMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' }) + '</div>' +
+          '<button type="button" class="btn" data-cal="next" aria-label="Next month">&gt;</button>' +
+          '</div>';
+        html += '<div class="inline" style="justify-content:space-between;font-weight:600">' + ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(function(d){return '<div style="width:36px;text-align:center">'+d+'</div>'}).join('') + '</div>';
+        html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:6px">';
+        for (var i=0;i<startDay;i++) html += '<div></div>';
+        var availableSet = new Set(availability.dates);
+        for (var d=1; d<=daysInMonth; d++) {
+          var dateObj = new Date(year, month, d);
+          var ymd = toYmd(dateObj);
+          var enabled = availableSet.has(ymd);
+          html += '<button type="button" class="cal-day" data-day="'+ymd+'" '+(enabled?'':'disabled')+' style="padding:6px 0;border:1px solid #eee;border-radius:6px;background:'+(enabled?'#fff':'#f2f2f2')+'">'+d+'</button>';
+        }
+        html += '</div>';
+        calendarPop.innerHTML = html;
+        var prev = calendarPop.querySelector('[data-cal="prev"]');
+        var next = calendarPop.querySelector('[data-cal="next"]');
+        prev.addEventListener('click', function(){ currentMonth = new Date(year, month-1, 1); renderCalendar(); });
+        next.addEventListener('click', function(){ currentMonth = new Date(year, month+1, 1); renderCalendar(); });
+        calendarPop.querySelectorAll('.cal-day').forEach(function(btn){
+          btn.addEventListener('click', function(){ onSelectDate(btn.getAttribute('data-day')); });
+        });
+      }
+
+      function onSelectDate(ymd) {
+        formData.date = ymd;
+        dateInput.value = ymd;
+        closeCalendar();
+        renderTimeSlots();
+        clearErrors(['date','time']);
+        dateInput.focus();
+      }
+
+      function openCalendar() {
+        if (!formData.employeeId) return;
+        renderCalendar();
+        calendarPop.style.display = '';
+        document.addEventListener('mousedown', onOutside);
+        document.addEventListener('keydown', onEsc);
+      }
+      function closeCalendar() {
+        calendarPop.style.display = 'none';
+        document.removeEventListener('mousedown', onOutside);
+        document.removeEventListener('keydown', onEsc);
+      }
+      function onOutside(e) {
+        if (!calendarPop.contains(e.target)) closeCalendar();
+      }
+      function onEsc(e) { if (e.key === 'Escape') closeCalendar(); }
+
+      function renderTimeSlots() {
+        timeSlots.innerHTML = '';
+        var slots = formData.date ? (availability.byDate[formData.date] || []) : [];
+        if (!formData.date && availability.dates.length) {
+          timeHelper.textContent = 'Select a date first';
+        } else if (formData.date && slots.length === 0) {
+          timeHelper.textContent = 'No time slots available for this selection';
+        } else {
+          timeHelper.textContent = '';
+        }
+        ['MORNING','AFTERNOON','FULL_DAY'].forEach(function (s) {
+          if (slots.indexOf(s) === -1) return;
+          var lower = (s === 'MORNING') ? 'morning' : (s === 'AFTERNOON' ? 'afternoon' : 'fullday');
+          var label = (s === 'MORNING') ? 'Morning' : (s === 'AFTERNOON' ? 'Afternoon' : 'Full Day');
+          var id = 'slot_' + lower;
+          var wrap = document.createElement('label'); wrap.className = 'muted';
+          var input = document.createElement('input'); input.type = 'radio'; input.name = 'slot'; input.value = lower; input.id = id;
+          if (formData.time === lower) input.checked = true;
+          input.addEventListener('change', function(){ formData.time = lower; clearErrors(['time']); });
+          wrap.appendChild(input);
+          wrap.appendChild(document.createTextNode(' ' + label));
+          timeSlots.appendChild(wrap);
+        });
+      }
+
+      function loadEmployees() {
+        request('GET', '/employees?page=1').then(function (resp) {
+          var data = Array.isArray(resp && resp.data) ? resp.data : [];
+          var mapPos = function (pos) {
+            var p = (pos || '').toUpperCase();
+            if (p.indexOf('PHOTOGRAPHER') !== -1) return 'photographer';
+            if (p.indexOf('VIDEOGRAPHER') !== -1) return 'videographer';
             return undefined;
           };
-          const list: Employee[] = mock.data.map((e:any)=> ({ id: e.id, name: e.name, service_type: mapPos(e.position) }));
-          setEmployees(list);
-        } else {
-          setEmployees([]);
-        }
-      }
-    })();
-  }, []);
-
-  // Clear fields when service type changes
-  function setServiceType(st: ServiceType){
-    setFormData(d => ({ ...d, serviceType: st, employeeId: '', date: '', time: '' }));
-    setAvailability({ dates: [], byDate: {} });
-  }
-
-  // Availability fetch on employee change
-  React.useEffect(()=>{
-    if (!formData.employeeId) { setAvailability({ dates: [], byDate: {} }); return; }
-    const ac = new AbortController();
-    (async () => {
-      setLoadingAvail(true);
-      try {
-        const resp = await request<any>('GET', `/books/availability?employee_id=${formData.employeeId}`);
-        const norm = normalizeAvailability(resp);
-        setAvailability(norm);
-        // set month to earliest available
-        if (norm.dates.length){
-          const [y,m] = norm.dates[0].split('-').map(Number);
-          setCurrentMonth(new Date(y, (m-1), 1));
-        }
-        // clear invalid selection
-        setFormData(d => ({ ...d, date: d.date && norm.dates.includes(d.date) ? d.date : '', time: '' }));
-      } catch(e){
-        console.error('Availability failed', e);
-        const useMocks = (window as any).BOOKING_USE_MOCKS;
-        if (useMocks) {
-          const mock = { data: [
-            { date: 1758153600, available_slots: ['MORNING','AFTERNOON','FULL_DAY'] },
-            { date: 1758240000, available_slots: ['MORNING'] },
-          ] };
-          const norm = normalizeAvailability(mock);
-          setAvailability(norm);
-          if (norm.dates.length){
-            const [y,m] = norm.dates[0].split('-').map(Number);
-            setCurrentMonth(new Date(y, (m-1), 1));
+          employees = data.map(function (e) { return { id: e.id, name: e.name, service_type: mapPos(e.position) }; });
+          populateEmployees(); updateToggle();
+        }).catch(function (e) {
+          console.error('Load employees failed', e);
+          if (CONFIG.useMocks) {
+            var mock = { data: [
+              { id: 1, name: 'Alice', position: 'PHOTOGRAPHER', email: 'alice@example.com', phone: '08123' },
+              { id: 2, name: 'Bob', position: 'VIDEOGRAPHER', email: 'bob@example.com', phone: '08124' },
+            ] };
+            var mapPos = function (pos) {
+              var p = (pos || '').toUpperCase();
+              if (p.indexOf('PHOTOGRAPHER') !== -1) return 'photographer';
+              if (p.indexOf('VIDEOGRAPHER') !== -1) return 'videographer';
+              return undefined;
+            };
+            employees = mock.data.map(function (e) { return { id: e.id, name: e.name, service_type: mapPos(e.position) }; });
+            populateEmployees(); updateToggle();
+          } else {
+            employees = []; populateEmployees(); updateToggle();
           }
-        } else {
-          setAvailability({ dates: [], byDate: {} });
-          setFormData(d => ({ ...d, date: '', time: '' }));
-        }
-      } finally {
-        setLoadingAvail(false);
+        });
       }
-    })();
-    return () => ac.abort();
-  }, [formData.employeeId]);
 
-  const availableDatesSet = React.useMemo(()=> new Set(availability.dates), [availability.dates]);
-  const slotOptions = React.useMemo(()=> formData.date ? (availability.byDate[formData.date] || []) : [], [availability, formData.date]);
+      function loadAvailability() {
+        if (!formData.employeeId) { availability = { dates: [], byDate: {} }; renderTimeSlots(); return; }
+        if (abortCtrl) abortCtrl.abort();
+        abortCtrl = new AbortController();
+        setLoadingAvail(true);
+        request('GET', '/books/availability?employee_id=' + formData.employeeId).then(function (resp) {
+          availability = normalizeAvailability(resp);
+          if (availability.dates.length) {
+            var ym = availability.dates[0].split('-'); currentMonth = new Date(Number(ym[0]), Number(ym[1]) - 1, 1);
+          }
+          if (formData.date && availability.dates.indexOf(formData.date) === -1) { formData.date = ''; dateInput.value = ''; }
+          formData.time = '';
+          renderTimeSlots();
+        }).catch(function (e) {
+          console.error('Availability failed', e);
+          if (CONFIG.useMocks) {
+            var mock = { data: [
+              { date: 1758153600, available_slots: ['MORNING','AFTERNOON','FULL_DAY'] },
+              { date: 1758240000, available_slots: ['MORNING'] },
+            ] };
+            availability = normalizeAvailability(mock);
+            if (availability.dates.length) {
+              var ym = availability.dates[0].split('-'); currentMonth = new Date(Number(ym[0]), Number(ym[1]) - 1, 1);
+            }
+          } else {
+            availability = { dates: [], byDate: {} };
+            formData.date = ''; dateInput.value = ''; formData.time = '';
+          }
+          renderTimeSlots();
+        }).finally(function () { setLoadingAvail(false); });
+      }
 
-  // Derived text
-  const employeePlaceholder = formData.serviceType === 'photographer' ? 'Select photographer' : 'Select videographer';
-  const noEmployeeText = formData.serviceType === 'photographer' ? 'No photographers available' : 'No videographers available';
+      // Handlers
+      toggleWrap.addEventListener('click', function (e) {
+        var btn = e.target.closest('button[data-service]');
+        if (!btn) return;
+        var st = btn.getAttribute('data-service');
+        if (st && (st === 'photographer' || st === 'videographer')) {
+          formData.serviceType = st;
+          formData.employeeId = ''; employeeSelect.value = '';
+          formData.date = ''; dateInput.value = '';
+          formData.time = '';
+          availability = { dates: [], byDate: {} };
+          populateEmployees(); updateToggle(); renderTimeSlots();
+          clearErrors();
+        }
+      });
 
-  function onSelectDate(ymd: string){
-    setFormData(d => ({ ...d, date: ymd, time: '' }));
-    setShowCalendar(false);
-    dateInputRef.current?.focus();
-  }
+      employeeSelect.addEventListener('change', function(){
+        formData.employeeId = employeeSelect.value || '';
+        clearErrors(['employeeId']);
+        loadAvailability();
+      });
 
-  function update<K extends keyof FormData>(key: K, val: FormData[K]){
-    setFormData(d => ({ ...d, [key]: val } as FormData));
-    if (errors[key as string]) setErrors(e => ({ ...e, [key]: '' }));
-  }
+      dateInput.addEventListener('click', function(){
+        if (!formData.employeeId) return; // require employee first
+        if (calendarPop.style.display === 'none' || !calendarPop.style.display) openCalendar(); else closeCalendar();
+      });
 
-  function validate(): boolean {
-    const e: Record<string,string> = {};
-    if (!formData.employeeId) e.employeeId = 'Select a ' + (formData.serviceType === 'photographer' ? 'photographer' : 'videographer');
-    if (!formData.date) e.date = 'Select a booking date';
-    if (!formData.time) e.time = 'Select a booking time';
-    if (!formData.customerName.trim()) e.customerName = 'Name is required';
-    if (!formData.phone.trim()) e.phone = 'Phone number is required';
-    if (!formData.email.trim()) e.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) e.email = 'Invalid email format';
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  }
+      phoneInput.addEventListener('input', function(e){
+        var v = phoneInput.value.replace(/[^0-9]/g, '');
+        phoneInput.value = v; formData.phone = v; clearErrors(['phone']);
+      });
+      nameInput.addEventListener('input', function(){ formData.customerName = nameInput.value; clearErrors(['customerName']); });
+      emailInput.addEventListener('input', function(){ formData.email = emailInput.value; clearErrors(['email']); });
 
-  async function onSubmit(e: React.FormEvent){
-    e.preventDefault();
-    if (!validate()) return;
-    setSubmitting(true);
-    try {
-      const payload = {
-        employee_id: Number(formData.employeeId),
-        date: ymdToUtcSeconds(formData.date as string),
-        time_slot: slotLowerToUpper(formData.time as UiSlotLower),
-        status: 'PENDING',
-        customer_name: formData.customerName.trim(),
-        customer_email: formData.email.trim(),
-        customer_phone: formData.phone.trim(),
-      };
-      await request('POST', '/books', payload);
-      alert('Booking request sent! We will contact you shortly');
-      setFormData({ serviceType: formData.serviceType, employeeId: '', date: '', time: '', customerName: '', phone: '', email: '' });
-      setAvailability({ dates: [], byDate: {} });
-    } catch (err){
-      console.error(err);
-      alert(String(err));
-    } finally {
-      setSubmitting(false);
-    }
-  }
+      formEl.addEventListener('submit', function(e){
+        e.preventDefault();
+        // Validate
+        var valid = true;
+        clearErrors();
+        if (!formData.employeeId) { showError('employeeId', 'Select a ' + (formData.serviceType === 'photographer' ? 'photographer' : 'videographer')); valid = false; }
+        if (!formData.date) { showError('date', 'Select a booking date'); valid = false; }
+        if (!formData.time) { showError('time', 'Select a booking time'); valid = false; }
+        if (!formData.customerName.trim()) { showError('customerName', 'Name is required'); valid = false; }
+        if (!formData.phone.trim()) { showError('phone', 'Phone number is required'); valid = false; }
+        if (!formData.email.trim()) { showError('email', 'Email is required'); valid = false; }
+        else if (!/\S+@\S+\.\S+/.test(formData.email)) { showError('email', 'Invalid email format'); valid = false; }
+        if (!valid) return;
+        // Submit
+        submitting = true; submitBtn.disabled = true; submitBtn.textContent = 'Submitting...';
+        var payload = {
+          employee_id: Number(formData.employeeId),
+          date: ymdToUtcSeconds(formData.date),
+          time_slot: slotLowerToUpper(formData.time),
+          status: 'PENDING',
+          customer_name: formData.customerName.trim(),
+          customer_email: formData.email.trim(),
+          customer_phone: formData.phone.trim(),
+        };
+        request('POST', '/books', payload).then(function(){
+          alert('Booking request sent! We will contact you shortly');
+          // reset
+          formData = { serviceType: formData.serviceType, employeeId: '', date: '', time: '', customerName: '', phone: '', email: '' };
+          employeeSelect.value = ''; dateInput.value=''; nameInput.value=''; phoneInput.value=''; emailInput.value='';
+          availability = { dates: [], byDate: {} }; renderTimeSlots();
+        }).catch(function(err){
+          console.error(err);
+          alert(String(err));
+        }).finally(function(){ submitting = false; submitBtn.disabled = false; submitBtn.textContent = 'Submit Booking Request'; });
+      });
 
-  const filteredEmployees = React.useMemo(()=>{
-    // If service_type is provided by API, filter by it; otherwise show all
-    return employees.filter(e => !e.service_type || e.service_type === formData.serviceType);
-  }, [employees, formData.serviceType]);
-
-  return (
-    <form onSubmit={onSubmit} noValidate>
-      <div className="form-grid">
-        <FieldRow label="Service Type" className="row-span-2">
-          <ToggleTabs value={formData.serviceType} onChange={setServiceType} />
-        </FieldRow>
-
-        <FieldRow label="Employee" error={errors.employeeId}>
-          <select className="select" value={formData.employeeId} onChange={e => update('employeeId', e.target.value)}>
-            <option value="" disabled>{filteredEmployees.length ? employeePlaceholder : noEmployeeText}</option>
-            {filteredEmployees.map(emp => (
-              <option key={emp.id} value={String(emp.id)}>{emp.name}</option>
-            ))}
-          </select>
-          {loadingAvail && formData.employeeId ? <div className="helper">Loading availability...</div> : null}
-        </FieldRow>
-
-        <FieldRow label="Date" error={errors.date}>
-          <div style={{ position:'relative' }}>
-            <input className="input" ref={dateInputRef} type="text" readOnly placeholder={!formData.employeeId ? 'Select an employee first' : (availability.dates.length ? 'Select date' : 'No dates available')} value={formData.date} onClick={()=> formData.employeeId && setShowCalendar(v=>!v)} />
-            {showCalendar && formData.employeeId && (
-              <CalendarPopover currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} availableDatesSet={availableDatesSet} onSelect={onSelectDate} onClose={()=> setShowCalendar(false)} />
-            )}
-          </div>
-        </FieldRow>
-
-        <FieldRow label="Time Slot" error={errors.time} helper={formData.date ? '' : (availability.dates.length ? 'Select a date first' : '')}>
-          <div className="inline">
-            {slotOptions.length === 0 && formData.date && <span className="helper">No time slots available for this selection</span>}
-            {(['MORNING','AFTERNOON','FULL_DAY'] as UiSlot[]).filter(s => slotOptions.includes(s)).map(s => {
-              const lower: UiSlotLower = s === 'MORNING' ? 'morning' : s === 'AFTERNOON' ? 'afternoon' : 'fullday';
-              const label = s === 'MORNING' ? 'Morning' : s === 'AFTERNOON' ? 'Afternoon' : 'Full Day';
-              return (
-                <label key={s} className="muted"><input type="radio" name="slot" value={lower} checked={formData.time===lower} onChange={()=> update('time', lower)} /> {label}</label>
-              );
-            })}
-          </div>
-        </FieldRow>
-
-        <div className="divider row-span-2"></div>
-
-        <FieldRow label="Full Name" id="customer_name" error={errors.customerName} className="row-span-2">
-          <input id="customer_name" className="input" type="text" placeholder="Your full name" value={formData.customerName} onChange={e => update('customerName', e.target.value)} />
-        </FieldRow>
-
-        <FieldRow label="Phone Number" id="customer_phone" error={errors.phone}>
-          <input id="customer_phone" className="input" type="tel" placeholder="Digits only" value={formData.phone} onChange={e => update('phone', e.target.value.replace(/[^0-9]/g, ''))} />
-        </FieldRow>
-
-        <FieldRow label="Email" id="customer_email" error={errors.email}>
-          <input id="customer_email" className="input" type="email" placeholder="you@example.com" value={formData.email} onChange={e => update('email', e.target.value)} />
-        </FieldRow>
-
-        <div className="row-span-2 button-container">
-          <button type="submit" className="btn" disabled={submitting}>{submitting ? 'Submitting...' : 'Submit Booking Request'}</button>
-        </div>
-      </div>
-    </form>
-  );
-}
-
-// Expose helper modules for reuse
-;(window as any).BookingRequest = { request };
-;(window as any).BookingUtils = { toYmd, ymdToUtcSeconds, slotLowerToUpper, normalizeAvailability };
-
-const root = ReactDOM.createRoot(document.getElementById('booking-root')!);
-root.render(<BookingApp />);
-</script>
+      // Init
+      updateToggle();
+      loadEmployees();
+      renderTimeSlots();
+    });
+  </script>
 </body>
+
 </html>

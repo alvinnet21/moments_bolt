@@ -211,6 +211,15 @@ body {
     filter: brightness(0) invert(1);
 }
 
+.footer a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
 /* Increased Font Sizes */
 .footer-hours, .footer-moments-photography-right {
     font-size: 24px;

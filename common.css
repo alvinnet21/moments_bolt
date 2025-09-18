@@ -19,3 +19,10 @@
   margin-bottom: 50px;
   text-align: center;
 }
+
+.centered-main {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | Employees</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="common.css" />
+  <link rel="stylesheet" href="booking.css" />
+  <script src="headerscript.js" defer></script>
+  <script src="layout.js" defer></script>
+</head>
+
+<body>
+  <!-- Header -->
+  <div id="header"></div>
+  <!-- Header End -->
+
+  <!-- Content -->
+  <main class="booking-wrapper centered-main">
+    <div class="booking-card" style="width:100%; max-width:1000px;">
+      <header style="text-align:center; margin-bottom: 8px;">
+        <h1 class="tagline" style="color: var(--brand-primary); margin-bottom: 4px;">Manage Employees</h1>
+        <div class="helper">Add, edit, and remove employees</div>
+      </header>
+
+      <div id="toast" style="position:fixed; top:16px; right:16px; z-index:50;"></div>
+
+      <section id="toolbar" class="inline" style="justify-content:space-between; margin: 8px 0 4px; align-items:center;">
+        <div class="inline" style="gap:8px;">
+          <button class="btn" id="reload_btn" aria-label="Reload">Reload</button>
+          <a class="btn" href="admin.html">Back to Admin</a>
+        </div>
+        <button class="btn" id="add_btn" aria-label="Add Employee">Add Employee</button>
+      </section>
+
+      <section id="form_section" class="emp-form" style="display:none;">
+        <h3 id="form_title" style="margin-bottom:8px;">Add Employee</h3>
+        <div class="form-grid">
+          <div class="form-row">
+            <label for="emp_name">Full Name</label>
+            <input id="emp_name" class="input" type="text" placeholder="Employee name" />
+            <div class="error" id="err_name" style="display:none;"></div>
+          </div>
+          <div class="form-row">
+            <label for="emp_role">Role</label>
+            <select id="emp_role" class="select">
+              <option value="" disabled selected>Select role</option>
+              <option value="photographer">Photographer</option>
+              <option value="videographer">Videographer</option>
+            </select>
+            <div class="error" id="err_role" style="display:none;"></div>
+          </div>
+          <div class="form-row">
+            <label for="emp_email">Email</label>
+            <input id="emp_email" class="input" type="email" placeholder="name@example.com" />
+            <div class="error" id="err_email" style="display:none;"></div>
+          </div>
+          <div class="form-row">
+            <label for="emp_phone">Phone</label>
+            <input id="emp_phone" class="input" type="tel" placeholder="+62 812 0000 1234" />
+            <div class="error" id="err_phone" style="display:none;"></div>
+          </div>
+        </div>
+        <div class="button-container" style="margin-top:12px;">
+          <button class="btn" id="save_btn">Save</button>
+          <button class="btn" id="cancel_btn" style="background:#777;">Cancel</button>
+        </div>
+      </section>
+
+      <section id="list" style="margin-top:12px;">
+        <div id="empty_state" class="helper" style="display:none; text-align:center; margin:24px 0;">No employees yet. Get started by adding your first employee.</div>
+        <div id="cards" class="cards"></div>
+      </section>
+    </div>
+  </main>
+  <!-- Content End -->
+
+  <!-- Footer -->
+  <div id="footer"></div>
+  <!-- Footer End -->
+
+  <script>
+    const CFG = { apiBase: 'http://localhost:8001' };
+    // Request helper
+    function prefixApi(path){ if (path.startsWith('http')) return path; const rel = path.startsWith('/api')?path:('/api'+(path.startsWith('/')?path:'/'+path)); return CFG.apiBase + rel; }
+    async function request(method, path, body){
+      const url = prefixApi(path); const headers={'Accept':'application/json','Content-Type':'application/json'};
+      const init={ method, headers }; if (body!==undefined) init.body = JSON.stringify(body);
+      const res = await fetch(url, init); if(!res.ok){ let t=''; try{t=await res.text()}catch{} throw new Error('API '+method+' '+url+' failed: '+res.status+' '+t); }
+      const ct = res.headers.get('content-type')||''; if (ct.includes('application/json')) return res.json(); return undefined;
+    }
+    function notify(msg, type){ const root=document.getElementById('toast'); const el=document.createElement('div'); el.textContent=msg; el.style.background=type==='error'?'#b00020':'var(--brand-primary)'; el.style.color='#fff'; el.style.padding='10px 12px'; el.style.borderRadius='8px'; el.style.marginTop='8px'; el.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'; root.appendChild(el); setTimeout(()=>el.remove(),3000); }
+
+    // State
+    let employees = [];
+    let showForm = false; let editing = null;
+    let formData = { name:'', role:'', email:'', phone:'' };
+    let errors = {}; let submitting = false; let processing = {}; let loadingList = false;
+
+    // Elements
+    const addBtn = document.getElementById('add_btn');
+    const reloadBtn = document.getElementById('reload_btn');
+    const formSection = document.getElementById('form_section');
+    const formTitle = document.getElementById('form_title');
+    const saveBtn = document.getElementById('save_btn');
+    const cancelBtn = document.getElementById('cancel_btn');
+    const nameInput = document.getElementById('emp_name');
+    const roleSelect = document.getElementById('emp_role');
+    const emailInput = document.getElementById('emp_email');
+    const phoneInput = document.getElementById('emp_phone');
+    const errName = document.getElementById('err_name');
+    const errRole = document.getElementById('err_role');
+    const errEmail = document.getElementById('err_email');
+    const errPhone = document.getElementById('err_phone');
+    const cardsEl = document.getElementById('cards');
+    const emptyState = document.getElementById('empty_state');
+
+    // Helpers
+    function clearErrors(){ [errName,errRole,errEmail,errPhone].forEach(e=>{ e.style.display='none'; e.textContent=''; }); }
+    function setError(el, msg){ el.textContent = msg; el.style.display = msg ? '' : 'none'; }
+    function validate(){
+      clearErrors(); let ok=true;
+      const name = nameInput.value.trim(); const role = roleSelect.value; const email = emailInput.value.trim().toLowerCase(); const phone = phoneInput.value.trim();
+      if (!name) { setError(errName, 'Name is required'); ok=false; }
+      if (!role) { setError(errRole, 'Role is required'); ok=false; }
+      if (!email) { setError(errEmail, 'Email is required'); ok=false; }
+      else if (!/\S+@\S+\.\S+/.test(email)) { setError(errEmail, 'Invalid email format'); ok=false; }
+      const phoneDigits = phone.replace(/[^0-9+]/g,'');
+      if (!phoneDigits) { setError(errPhone, 'Phone number is required'); ok=false; }
+      else if (phoneDigits.replace(/[^0-9]/g,'').length < 8 || phoneDigits.replace(/[^0-9]/g,'').length > 20) { setError(errPhone, 'Invalid phone number'); ok=false; }
+      formData = { name, role, email, phone };
+      return ok;
+    }
+
+    function openForm(mode, emp){
+      showForm = true; formSection.style.display='';
+      if (mode==='add'){ editing=null; formTitle.textContent='Add Employee'; nameInput.value=''; roleSelect.value=''; emailInput.value=''; phoneInput.value=''; }
+      else { editing=emp; formTitle.textContent='Edit Employee'; nameInput.value=emp.name||''; roleSelect.value=emp.role||''; emailInput.value=emp.email||''; phoneInput.value=emp.phone||''; }
+      clearErrors(); nameInput.focus();
+    }
+    function closeForm(){ showForm=false; formSection.style.display='none'; editing=null; }
+
+    function roleBadge(role){ const cls = role==='videographer'?'badge badge-role-videographer':'badge badge-role-photographer'; const icon = role==='videographer'?'<svg viewBox="0 0 24 24"><path d="M3 6l2-2h3l-2 2h3l2-2h3l-2 2h3l2-2h1v4H3V6zm0 6h18v8H3v-8z"/></svg>':'<svg viewBox="0 0 24 24"><path d="M4 7h3l2-2h6l2 2h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V9a2 2 0 012-2zm8 3a5 5 0 100 10 5 5 0 000-10z"/></svg>'; return '<span class="'+cls+'">'+icon+' '+(role||'-')+'</span>'; }
+
+    function renderList(){
+      cardsEl.innerHTML='';
+      if (!employees.length){ emptyState.style.display=''; return; } else { emptyState.style.display='none'; }
+      employees.forEach(emp => {
+        const card = document.createElement('div'); card.className='admin-card';
+        const busy = !!processing[emp.id];
+        card.innerHTML = '<div class="admin-card-header">'+
+            '<div class="service-chip"><strong>'+ (emp.name||'-') +'</strong></div>'+ roleBadge(emp.role||'') +
+          '</div>'+
+          '<div class="info-grid">'+
+            '<div><strong>Email</strong><div>'+(emp.email||'-')+'</div></div>'+
+            '<div><strong>Phone</strong><div>'+(emp.phone||'-')+'</div></div>'+
+          '</div>'+
+          '<div class="card-actions">'+
+            '<button class="btn" data-action="edit" aria-label="Edit employee '+(emp.name||'')+'" style="margin-right:6px;">Edit</button>'+
+            '<button class="btn" data-action="delete" aria-label="Delete employee '+(emp.name||'')+'" '+(busy?'disabled':'')+' style="background:#c62828;">'+(busy?'Processing...':'Delete')+'</button>'+
+          '</div>';
+        cardsEl.appendChild(card);
+        const editBtn = card.querySelector('[data-action="edit"]');
+        const delBtn = card.querySelector('[data-action="delete"]');
+        editBtn.addEventListener('click', ()=> openForm('edit', emp));
+        delBtn.addEventListener('click', async ()=>{
+          if (!confirm('Are you sure?')) return;
+          try {
+            processing[emp.id]=true; renderList();
+            await request('DELETE', '/employees/'+encodeURIComponent(emp.id));
+            notify('Employee deleted','ok');
+            await loadEmployees();
+          } catch(e){ console.error(e); notify('Failed to delete employee','error'); }
+          finally { delete processing[emp.id]; renderList(); }
+        });
+      });
+    }
+
+    async function loadEmployees(){
+      loadingList = true; reloadBtn.disabled = true;
+      try {
+        const resp = await request('GET', '/employees?page=1&per_page=1000');
+        const arr = Array.isArray(resp && resp.data) ? resp.data : (Array.isArray(resp) ? resp : []);
+        // Map API -> UI
+        employees = arr.map(e => ({ id: String(e.id), name: e.name, role: ((e.position||e.role||'').toString().toLowerCase().includes('video')?'videographer':'photographer'), email: e.email, phone: e.phone, createdAt: e.created_at || e.createdAt }));
+        notify('Employees loaded','ok');
+      } catch(e){ console.error(e); notify('Failed to load employees','error'); employees = []; }
+      finally { loadingList = false; reloadBtn.disabled = false; renderList(); }
+    }
+
+    async function saveEmployee(){
+      if (!validate()) { (nameInput.value.trim()? (roleSelect.value? (emailInput.value.trim()? phoneInput.focus(): emailInput.focus()): roleSelect.focus()) : nameInput.focus()); return; }
+      saveBtn.disabled = true; saveBtn.textContent='Submitting...';
+      try {
+        const payload = { name: formData.name, position: (formData.role || '').toUpperCase(), email: formData.email.toLowerCase(), phone: formData.phone };
+        if (!editing) { await request('POST', '/employees', payload); notify('Employee added','ok'); }
+        else { await request('PUT', '/employees/'+encodeURIComponent(editing.id), payload); notify('Employee updated','ok'); }
+        closeForm(); await loadEmployees();
+      } catch(e){ console.error(e); notify(editing?'Failed to update employee':'Failed to add employee','error'); }
+      finally { saveBtn.disabled = false; saveBtn.textContent='Save'; }
+    }
+
+    // Events
+    addBtn.addEventListener('click', ()=> openForm('add'));
+    reloadBtn.addEventListener('click', ()=> loadEmployees());
+    cancelBtn.addEventListener('click', ()=> closeForm());
+    saveBtn.addEventListener('click', ()=> saveEmployee());
+    nameInput.addEventListener('input', ()=> errName.style.display='none');
+    roleSelect.addEventListener('change', ()=> errRole.style.display='none');
+    emailInput.addEventListener('input', ()=> errEmail.style.display='none');
+    phoneInput.addEventListener('input', ()=> errPhone.style.display='none');
+
+    // Init
+    loadEmployees();
+    renderList();
+  </script>
+</body>
+
+</html>
