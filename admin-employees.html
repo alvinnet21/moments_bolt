@@ -19,7 +19,7 @@
 
   <!-- Content -->
   <main class="booking-wrapper centered-main">
-    <div class="booking-card" style="width:100%; max-width:1000px;">
+    <div class="booking-card">
       <header style="text-align:center; margin-bottom: 8px;">
         <h1 class="tagline" style="color: var(--brand-primary); margin-bottom: 4px;">Manage Employees</h1>
         <div class="helper">Add, edit, and remove employees</div>
@@ -29,8 +29,10 @@
 
       <section id="toolbar" class="inline" style="justify-content:space-between; margin: 8px 0 4px; align-items:center;">
         <div class="inline" style="gap:8px;">
-          <button class="btn" id="reload_btn" aria-label="Reload">Reload</button>
-          <a class="btn" href="admin.html">Back to Admin</a>
+          <button class="btn btn-ghost btn-icon" id="reload_btn" aria-label="Reload" title="Reload list">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5 0 1.07-.34 2.06-.92 2.87l1.46 1.46A6.96 6.96 0 0 0 19 13c0-3.87-3.13-7-7-7zm-5.54.13A6.96 6.96 0 0 0 5 11c0 3.87 3.13 7 7 7v3l4-4-4-4v3c-2.76 0-5-2.24-5-5 0-1.07.34-2.06.92-2.87L6.46 6.13z"/></svg>
+            <span>Reload</span>
+          </button>
         </div>
         <button class="btn" id="add_btn" aria-label="Add Employee">Add Employee</button>
       </section>
@@ -65,7 +67,7 @@
         </div>
         <div class="button-container" style="margin-top:12px;">
           <button class="btn" id="save_btn">Save</button>
-          <button class="btn" id="cancel_btn" style="background:#777;">Cancel</button>
+          <button class="btn btn-secondary" id="cancel_btn">Cancel</button>
         </div>
       </section>
 
@@ -158,8 +160,12 @@
             '<div><strong>Phone</strong><div>'+(emp.phone||'-')+'</div></div>'+
           '</div>'+
           '<div class="card-actions">'+
-            '<button class="btn" data-action="edit" aria-label="Edit employee '+(emp.name||'')+'" style="margin-right:6px;">Edit</button>'+
-            '<button class="btn" data-action="delete" aria-label="Delete employee '+(emp.name||'')+'" '+(busy?'disabled':'')+' style="background:#c62828;">'+(busy?'Processing...':'Delete')+'</button>'+
+            '<button class="btn btn-ghost btn-icon icon-only" data-action="edit" aria-label="Edit employee '+(emp.name||'')+'" title="Edit">'
+              +'<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42L18.37 3.29a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.83z"/></svg>'+
+            '</button>'+
+            '<button class="btn btn-danger btn-icon icon-only" data-action="delete" aria-label="Delete employee '+(emp.name||'')+'" title="'+(busy?'Processing...':'Delete')+'" '+(busy?'disabled':'')+'> '
+              +'<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>'+
+            '</button>'+
           '</div>';
         cardsEl.appendChild(card);
         const editBtn = card.querySelector('[data-action="edit"]');

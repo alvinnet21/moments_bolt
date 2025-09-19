@@ -1,22 +1,45 @@
+/* Buttons */
 .btn {
   background-color: var(--brand-primary, #998c7f);
   color: #fff;
-  padding: 10px 20px;
+  padding: 10px 14px;
   text-decoration: none;
-  font-size: 30px;
-  border-radius: 5px;
-  border: none;
+  font-size: 16px;
+  line-height: 1.2;
+  border-radius: 8px;
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.02s ease;
 }
+.btn:hover { background-color: var(--brand-primary-dark, #8d7762); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn:focus, .btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(153,140,127,0.35); }
+.btn:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 
-.btn:hover {
-  background-color: var(--brand-primary-dark, #8d7762);
+/* Variants */
+.btn-secondary { background: #6b7280; }
+.btn-secondary:hover { background: #4b5563; }
+.btn-danger { background: #c62828; }
+.btn-danger:hover { background: #ad1f1f; }
+.btn-ghost {
+  background: #f3f4f6;
+  color: #111827;
+  border-color: #e5e7eb;
 }
+.btn-ghost:hover { background: #e5e7eb; }
+
+/* Small icon button variant */
+.btn-icon { padding: 8px 10px; font-size: 14px; }
+.btn-icon svg { margin-right: 6px; }
+.btn-icon.icon-only svg { margin-right: 0; }
 
 .button-container {
-  margin-top: 50px;
-  margin-bottom: 50px;
+  margin-top: 28px;
+  margin-bottom: 28px;
   text-align: center;
 }
 

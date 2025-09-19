@@ -109,8 +109,8 @@
           <div class="form-row row-span-2">\
             <label>Service Type</label>\
             <div class="inline" id="service-toggle">\
-              <button type="button" class="btn" data-service="photographer">Photographer</button>\
-              <button type="button" class="btn" data-service="videographer">Videographer</button>\
+              <button type="button" class="btn btn-toggle" data-service="photographer" aria-pressed="true">Photographer</button>\
+              <button type="button" class="btn btn-toggle" data-service="videographer" aria-pressed="false">Videographer</button>\
             </div>\
           </div>\
           <div class="form-row">\
@@ -125,7 +125,7 @@
             <label for="date">Date</label>\
             <div style="position:relative">\
               <input id="date" class="input" type="text" readonly placeholder="Select an employee first" />\
-              <div id="calendar-pop" style="display:none; position:absolute; z-index:20;"></div>\
+              <div id="calendar-pop" class="calendar-popover" style="display:none; position:absolute; z-index:20;"></div>\
             </div>\
             <div class="error" id="date-error" style="display:none;"></div>\
           </div>\
@@ -187,13 +187,8 @@
 
       // Utils UI
       function setBtnSelected(btn, sel) {
-        if (sel) {
-          btn.style.backgroundColor = 'var(--brand-primary)';
-          btn.style.color = '#fff';
-        } else {
-          btn.style.backgroundColor = '#ddd';
-          btn.style.color = '#333';
-        }
+        btn.classList.toggle('selected', !!sel);
+        btn.setAttribute('aria-pressed', sel ? 'true' : 'false');
       }
 
       function updateToggle() {

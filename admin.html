@@ -7,6 +7,7 @@
   <title>Admin | Moments</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="common.css" />
+  <link rel="stylesheet" href="booking.css" />
   <script src="headerscript.js" defer></script>
   <script src="layout.js" defer></script>
 </head>
@@ -21,9 +22,19 @@
     <div class="booking-card" style="text-align:center;">
       <h1 class="tagline" style="color: var(--brand-primary);">Admin</h1>
       <p class="helper" style="margin-top:8px;">Choose a section to manage:</p>
-      <div class="button-container" style="margin-top:24px;">
-        <a class="btn" href="admin-bookings.html" style="margin-right:12px;">List Booking Request</a>
-        <a class="btn" href="admin-employees.html">Employees</a>
+      <div class="quick-cards">
+        <a class="quick-card quick-card-link" href="admin-bookings.html" aria-label="Open Booking Requests">
+          <div class="icon">📋</div>
+          <div class="title">Booking Requests</div>
+          <div class="desc">Review, confirm, cancel, and finish bookings.</div>
+          <span class="btn">Open Bookings</span>
+        </a>
+        <a class="quick-card quick-card-link" href="admin-employees.html" aria-label="Manage Employees">
+          <div class="icon">👤</div>
+          <div class="title">Employees</div>
+          <div class="desc">Add and manage photographers and videographers.</div>
+          <span class="btn btn-ghost">Manage Employees</span>
+        </a>
       </div>
     </div>
   </main>

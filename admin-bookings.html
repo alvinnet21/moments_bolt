@@ -19,16 +19,13 @@
 
   <!-- Content -->
   <main class="booking-wrapper centered-main">
-    <div class="booking-card" style="width:100%; max-width:1100px;">
+    <div class="booking-card">
       <header style="text-align:center; margin-bottom: 8px;">
         <h1 class="tagline" style="color: var(--brand-primary); margin-bottom: 4px;">Admin Dashboard</h1>
         <div class="helper">Manage your bookings and staff</div>
       </header>
 
-      <nav class="inline" style="justify-content:center; gap:8px; margin: 12px 0 8px 0;">
-        <a class="btn" style="background: var(--brand-primary); color: #fff;">Booking Requests</a>
-        <a class="btn" href="admin-employees.html">Employees</a>
-      </nav>
+      
 
       <div id="toast" style="position:fixed; top:16px; right:16px; z-index:50;"></div>
 
@@ -38,24 +35,20 @@
             <label for="start_date">From Date</label>
             <div style="position:relative">
               <input id="start_date" class="input" type="text" readonly />
-              <div id="cal_start" style="display:none; position:absolute; z-index:20;"></div>
+              <div id="cal_start" class="calendar-popover" style="display:none; position:absolute; z-index:20;"></div>
             </div>
           </div>
           <div class="form-row">
             <label for="end_date">To Date</label>
-            <div style="position:relative">
+            <div style="position:relative; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
               <input id="end_date" class="input" type="text" readonly />
-              <div id="cal_end" style="display:none; position:absolute; z-index:20;"></div>
+              <button class="btn btn-ghost btn-icon" id="load_btn" type="button" title="Reload list">
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5 0 1.07-.34 2.06-.92 2.87l1.46 1.46A6.96 6.96 0 0 0 19 13c0-3.87-3.13-7-7-7zm-5.54.13A6.96 6.96 0 0 0 5 11c0 3.87 3.13 7 7 7v3l4-4-4-4v3c-2.76 0-5-2.24-5-5 0-1.07.34-2.06.92-2.87L6.46 6.13z"/></svg>
+                <span>Load</span>
+              </button>
+              <span class="helper" id="loading_list" style="display:none;">Loading...</span>
+              <div id="cal_end" class="calendar-popover" style="display:none; position:absolute; z-index:20;"></div>
             </div>
-          </div>
-          <div class="form-row">
-            <label>&nbsp;</label>
-            <button class="btn" id="load_btn" type="button">Load</button>
-            <div class="helper" id="loading_list" style="display:none;">Loading...</div>
-          </div>
-          <div class="form-row">
-            <label>&nbsp;</label>
-            <a class="btn" href="admin.html">Back to Admin</a>
           </div>
         </div>
       </section>
@@ -203,10 +196,19 @@
       // Expecting server fields; adapt as needed
       // Example assumes snake_case fields
       const statusMap = { PENDING:'pending', ACCEPTED:'confirmed', REJECTED:'cancelled', FINISHED:'completed', pending:'pending', accepted:'confirmed', rejected:'cancelled', finished:'completed' };
+      // Derive service type: prefer item.service_type; fallback to nested employee.position/role
+      let svc = 'photographer';
+      const svcRaw = item.service_type || (item.employee && (item.employee.position || item.employee.role));
+      if (typeof svcRaw === 'string'){
+        const s = svcRaw.toUpperCase();
+        if (s.includes('VIDEO')) svc = 'videographer';
+        else if (s.includes('PHOTO')) svc = 'photographer';
+      }
       return {
         id: String(item.id ?? ''),
-        serviceType: (item.service_type === 'VIDEOGRAPHER' ? 'videographer' : 'photographer'),
-        employeeId: String(item.employee_id ?? ''),
+        serviceType: svc,
+        employeeId: String(item.employee_id ?? (item.employee && item.employee.id) ?? ''),
+        employeeName: (item.employee && item.employee.name) || '',
         date: item.date_ymd || toYmdSafe(item.date) || '',
         time: (item.time_slot === 'AFTERNOON' ? 'afternoon' : (item.time_slot === 'FULL_DAY' ? 'fullday' : 'morning')),
         customerName: item.customer_name || '',
@@ -218,9 +220,9 @@
     }
 
     function getEmployeeName(empId){
-      if (!empId) return 'Employee not found';
+      if (!empId) return '-';
       const m = employeesMap[empId];
-      return m || 'Employee not found';
+      return m || '-';
     }
     function statusIconSvg(status){
       // Simple inline SVGs, sized via CSS (.badge svg)
@@ -269,12 +271,12 @@
       slice.forEach(b => {
         const card = document.createElement('div'); card.className = 'admin-card';
         const meta = getStatusMeta(b.status);
-        const empName = getEmployeeName(b.employeeId);
+        const empName = (b.employeeName && b.employeeName.trim()) ? b.employeeName : getEmployeeName(b.employeeId);
         const icon = b.serviceType === 'videographer' ? '🎬' : '📷';
         const busy = !!processing[b.id];
         card.innerHTML = 
           '<div class="admin-card-header">'
-          +  '<div class="service-chip">'+icon+' <span>'+b.customerName+'</span></div>'
+          +  '<div class="service-chip">' + (b.serviceType === 'videographer' ? '🎥' : '📷') + ' <span>'+b.customerName+'</span></div>'
           +  '<span class="'+meta.cls+'">'+meta.svg+' '+meta.label+'</span>'
           +'</div>'
           +'<div class="helper" style="margin-bottom:8px;">'+ b.serviceType + ' - ' + empName + '</div>'
@@ -293,10 +295,10 @@
 
     function renderActionsHtml(b){
       const busy = !!processing[b.id];
-      function btn(label, action, color){ return '<button class="btn" aria-label="'+label+'" data-action="'+action+'" '+(busy?'disabled':'')+' style="margin-right:6px;'+(color?('background:'+color+';'):'')+'">'+(busy?'Processing...':label)+'</button>'; }
-      if (b.status==='pending') return btn('Confirm','confirm','var(--brand-primary)') + btn('Cancel','cancel','#c62828');
-      if (b.status==='confirmed') return btn('Finish','complete','#1565c0');
-      return '<span class="helper">No actions</span>';
+      function btn(label, action, variant){ const cls = variant?(' btn-'+variant):''; return '<button class="btn'+cls+'" aria-label="'+label+'" data-action="'+action+'" '+(busy?'disabled':'')+' style="margin-right:6px;">'+(busy?'Processing...':label)+'</button>'; }
+      if (b.status==='pending') return btn('Confirm','confirm','') + btn('Cancel','cancel','danger');
+      if (b.status==='confirmed') return btn('Finish','complete','secondary');
+      return '';
     }
     function bindActionButtons(rootEl, b){
       const map = { confirm:'ACCEPTED', cancel:'REJECTED', complete:'FINISHED' };
@@ -416,7 +418,8 @@
 
     // Init
     renderFilters();
-    renderTable();
+    // Auto-load bookings for current month range on first open
+    loadList();
     loadEmployeesMap();
   </script>
 </body>
