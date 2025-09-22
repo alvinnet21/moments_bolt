@@ -7,7 +7,21 @@
   <title>Admin | Booking Requests</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="common.css" />
-  <link rel="stylesheet" href="booking.css" />
+  <link rel="stylesheet" href="16. Bookings/booking.css" />
+  <style>
+    /* Modal fade/scale animation */
+    #block_modal { opacity: 0; transition: opacity .22s ease; }
+    #block_modal.modal-open { opacity: 1; }
+    #block_modal .modal-card { transform: scale(0.98); opacity: 0; transition: transform .22s ease, opacity .22s ease; }
+    #block_modal.modal-open .modal-card { transform: scale(1); opacity: 1; }
+  </style>
+  <script>
+    // Simple guard: redirect to login when not authenticated
+    try {
+      var authed = (sessionStorage.getItem('adminAuthed') === 'true') || (localStorage.getItem('adminAuthed') === 'true');
+      if (!authed) { window.location.replace('18. admin-login.html'); }
+    } catch(e){ window.location.replace('18. admin-login.html'); }
+  </script>
   <script src="headerscript.js" defer></script>
   <script src="layout.js" defer></script>
 </head>
@@ -20,6 +34,9 @@
   <!-- Content -->
   <main class="booking-wrapper centered-main">
     <div class="booking-card">
+      <div style="display:flex; justify-content:flex-end; margin-bottom:4px;">
+        <button id="logout_btn" class="btn btn-ghost">Logout</button>
+      </div>
       <header style="text-align:center; margin-bottom: 8px;">
         <h1 class="tagline" style="color: var(--brand-primary); margin-bottom: 4px;">Admin Dashboard</h1>
         <div class="helper">Manage your bookings and staff</div>
@@ -46,6 +63,7 @@
                 <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5 0 1.07-.34 2.06-.92 2.87l1.46 1.46A6.96 6.96 0 0 0 19 13c0-3.87-3.13-7-7-7zm-5.54.13A6.96 6.96 0 0 0 5 11c0 3.87 3.13 7 7 7v3l4-4-4-4v3c-2.76 0-5-2.24-5-5 0-1.07.34-2.06.92-2.87L6.46 6.13z"/></svg>
                 <span>Load</span>
               </button>
+              <button class="btn btn-icon" id="open_block_modal" type="button" title="Block availability">Block Availability</button>
               <span class="helper" id="loading_list" style="display:none;">Loading...</span>
               <div id="cal_end" class="calendar-popover" style="display:none; position:absolute; z-index:20;"></div>
             </div>
@@ -58,6 +76,40 @@
         <div id="cards" class="cards"></div>
         <div id="pagination" class="button-container" style="margin-top:16px;"></div>
       </section>
+      
+      <!-- Block Availability Modal -->
+      <div id="block_modal" style="display:none; position:fixed; inset:0; background: rgba(0,0,0,0.4); z-index:60; align-items:center; justify-content:center; padding: 20px;">
+        <div class="booking-card modal-card" style="max-width:1024px; width:90vw; padding:20px; max-height:85vh; overflow:visible;">
+          <header style="margin-bottom:8px; text-align:center;">
+            <h2 class="tagline" style="color: var(--brand-primary); font-size: 22px; margin:0;">Block Availability</h2>
+            <div class="helper">Choose employee, date, and time to block</div>
+          </header>
+          <div class="form-grid">
+            <div class="form-row">
+              <label for="block_employee">Employee</label>
+              <select id="block_employee" class="select">
+                <option value="" disabled selected>Select employee</option>
+              </select>
+              <div class="helper" id="block_helper" style="display:none;">Loading availability...</div>
+            </div>
+            <div class="form-row" id="block_date_row" style="display:none;">
+              <label for="block_date">Date</label>
+              <div style="position:relative">
+                <input id="block_date" class="input" type="text" readonly placeholder="Pick a date" />
+                <div id="cal_block" class="calendar-popover" style="display:none; position:absolute; z-index:20;"></div>
+              </div>
+            </div>
+            <div class="form-row" id="block_time_row" style="display:none;">
+              <label>Time</label>
+              <div id="block_times" class="inline"></div>
+            </div>
+          </div>
+          <div class="inline" style="justify-content:flex-end; margin-top:12px; gap:8px;">
+            <button id="block_close_btn" type="button" class="btn btn-ghost">Close</button>
+            <button id="block_btn" type="button" class="btn">Block</button>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
   <!-- Content End -->
@@ -67,6 +119,15 @@
   <!-- Footer End -->
 
   <script>
+    // Logout wiring
+    (function(){
+      var btn = document.getElementById('logout_btn');
+      if (btn) btn.addEventListener('click', function(){
+        try { sessionStorage.removeItem('adminAuthed'); localStorage.removeItem('adminAuthed'); } catch(_) {}
+        window.location.replace('18. admin-login.html');
+      });
+    })();
+
     // Config
     const CFG = { apiBase: 'http://localhost:8001' };
     // Utils
@@ -123,6 +184,20 @@
     const emptyState = document.getElementById('empty_state');
     const pagination = document.getElementById('pagination');
 
+    // Block UI elements and state
+    const blockEmpSelect = document.getElementById('block_employee');
+    const blockDateInput = document.getElementById('block_date');
+    const calBlock = document.getElementById('cal_block');
+    const blockTimes = document.getElementById('block_times');
+    const blockBtn = document.getElementById('block_btn');
+    const blockModal = document.getElementById('block_modal');
+    const openBlockBtn = document.getElementById('open_block_modal');
+    const blockCloseBtn = document.getElementById('block_close_btn');
+    let blockMonth = new Date();
+    let blockForm = { employeeId: '', date: '', time: 'morning' };
+    let blockAvailability = { dates: [], byDate: {} };
+    let blockLoading = false;
+
     function renderFilters(){
       startInput.value = dateFilter.startDate;
       endInput.value = dateFilter.endDate;
@@ -137,6 +212,145 @@
     function closeCals(){ showStartCal=false; showEndCal=false; calStart.style.display='none'; calEnd.style.display='none'; document.removeEventListener('mousedown', onOutside); document.removeEventListener('keydown', onEsc); }
     function onOutside(e){ if (!calStart.contains(e.target) && !calEnd.contains(e.target) && e.target!==startInput && e.target!==endInput) closeCals(); }
     function onEsc(e){ if (e.key==='Escape') closeCals(); }
+
+    // Block date calendar open/close
+    function openBlockCal(){
+      calBlock.style.display='';
+      renderBlockCalendar();
+      document.addEventListener('mousedown', onBlockOutside);
+      document.addEventListener('keydown', onBlockEsc);
+    }
+    function closeBlockCal(){ calBlock.style.display='none'; document.removeEventListener('mousedown', onBlockOutside); document.removeEventListener('keydown', onBlockEsc); }
+    function onBlockOutside(e){ if (!calBlock.contains(e.target) && e.target!==blockDateInput) closeBlockCal(); }
+    function onBlockEsc(e){ if (e.key==='Escape') closeBlockCal(); }
+    function setBlockLoading(v){ blockLoading = v; const h = document.getElementById('block_helper'); if (h) h.style.display = v ? '' : 'none'; }
+
+    function normalizeAvailability(resp){
+      const byDate = {};
+      const arr = Array.isArray(resp && resp.data) ? resp.data : [];
+      for (const item of arr){
+        const secs = Number(item && item.date);
+        if (!Number.isFinite(secs)) continue;
+        const ymd = toYmd(new Date(secs * 1000));
+        const slots = Array.isArray(item && item.available_slots) ? item.available_slots.filter(function (s) { return s === 'MORNING' || s === 'AFTERNOON' || s === 'FULL_DAY'; }) : [];
+        if (slots.length) byDate[ymd] = slots;
+      }
+      return { dates: Object.keys(byDate).sort(), byDate };
+    }
+
+    function renderBlockCalendar(){
+      const year = blockMonth.getFullYear();
+      const month = blockMonth.getMonth();
+      const first = new Date(year, month, 1);
+      const startDay = first.getDay();
+      const dim = new Date(year, month+1, 0).getDate();
+      let html='';
+      html += '<div class="inline" style="justify-content:space-between;align-items:center;margin-bottom:8px">'+
+        '<button type="button" class="btn" data-cal="prev">&lt;</button>'+
+        '<div style="font-weight:700">'+ blockMonth.toLocaleString('en-US',{month:'long',year:'numeric'}) +'</div>'+
+        '<button type="button" class="btn" data-cal="next">&gt;</button>'+
+      '</div>';
+      html += '<div class="inline" style="justify-content:space-between;font-weight:600">'+ ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>'<div style="width:36px;text-align:center">'+d+'</div>').join('') +'</div>';
+      html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:6px">';
+      for (let i=0;i<startDay;i++) html += '<div></div>';
+      const availableSet = new Set(blockAvailability.dates);
+      for (let d=1; d<=dim; d++){
+        const ymd = toYmd(new Date(year, month, d));
+        const enabled = availableSet.has(ymd);
+        html += '<button type="button" class="cal-day" data-day="'+ymd+'" '+(enabled?'':'disabled')+' style="padding:6px 0;border:1px solid #eee;border-radius:6px;background:'+(enabled?'#fff':'#f2f2f2')+'">'+d+'</button>';
+      }
+      html += '</div>';
+      calBlock.innerHTML = html;
+      const prev = calBlock.querySelector('[data-cal="prev"]');
+      const next = calBlock.querySelector('[data-cal="next"]');
+      prev.addEventListener('click', ()=>{ blockMonth = new Date(year, month-1, 1); renderBlockCalendar(); });
+      next.addEventListener('click', ()=>{ blockMonth = new Date(year, month+1, 1); renderBlockCalendar(); });
+      calBlock.querySelectorAll('.cal-day').forEach(btn=> btn.addEventListener('click', ()=> onSelectBlockDate(btn.getAttribute('data-day'))));
+    }
+
+    function onSelectBlockDate(ymd){
+      blockForm.date = ymd; blockDateInput.value = ymd; closeBlockCal(); renderBlockTimeSlots();
+    }
+
+    function renderBlockTimeSlots(){
+      if (!blockTimes) return;
+      blockTimes.innerHTML = '';
+      const slots = blockForm.date ? (blockAvailability.byDate[blockForm.date] || []) : [];
+      if (!blockForm.date){ blockTimes.textContent = 'Select a date first'; return; }
+      if (slots.length === 0){ blockTimes.textContent = 'No time slots available for this selection'; return; }
+      ['MORNING','AFTERNOON','FULL_DAY'].forEach(function (s) {
+        if (slots.indexOf(s) === -1) return;
+        const lower = (s === 'MORNING') ? 'morning' : (s === 'AFTERNOON' ? 'afternoon' : 'fullday');
+        const label = (s === 'MORNING') ? 'Morning' : (s === 'AFTERNOON' ? 'Afternoon' : 'Full Day');
+        const id = 'block_slot_' + lower;
+        const wrap = document.createElement('label'); wrap.className = 'muted';
+        const input = document.createElement('input'); input.type = 'radio'; input.name = 'block_slot'; input.value = lower; input.id = id;
+        if (blockForm.time === lower) input.checked = true;
+        input.addEventListener('change', function(){ blockForm.time = lower; });
+        wrap.appendChild(input);
+        wrap.appendChild(document.createTextNode(' ' + label));
+        blockTimes.appendChild(wrap);
+      });
+    }
+
+    async function loadBlockAvailability(){
+      if (!blockForm.employeeId){ blockAvailability = { dates: [], byDate: {} }; return; }
+      setBlockLoading(true);
+      try{
+        const resp = await request('GET', '/books/availability?employee_id=' + encodeURIComponent(blockForm.employeeId));
+        blockAvailability = normalizeAvailability(resp);
+        if (blockAvailability.dates.length){ const ym = blockAvailability.dates[0].split('-'); blockMonth = new Date(Number(ym[0]), Number(ym[1])-1, 1); }
+        // Reset selected date/time if no longer valid
+        if (blockForm.date && blockAvailability.dates.indexOf(blockForm.date) === -1){ blockForm.date = ''; blockDateInput.value = ''; }
+        blockForm.time = '';
+        // Show date/time rows now that we have data
+        const dateRow = document.getElementById('block_date_row'); if (dateRow) dateRow.style.display = '';
+        const timeRow = document.getElementById('block_time_row'); if (timeRow) timeRow.style.display = '';
+        renderBlockTimeSlots();
+      } catch(e){
+        console.error('Block availability failed', e);
+        blockAvailability = { dates: [], byDate: {} };
+        const dateRow = document.getElementById('block_date_row'); if (dateRow) dateRow.style.display = '';
+        const timeRow = document.getElementById('block_time_row'); if (timeRow) timeRow.style.display = '';
+        renderBlockTimeSlots();
+      } finally {
+        setBlockLoading(false);
+      }
+    }
+
+    // Block modal open/close helpers
+    function resetBlockFormUI(){
+      if (blockEmpSelect) blockEmpSelect.value = '';
+      if (blockDateInput) blockDateInput.value = '';
+      if (blockTimes) { blockTimes.innerHTML = ''; }
+      const dateRow = document.getElementById('block_date_row'); if (dateRow) dateRow.style.display = 'none';
+      const timeRow = document.getElementById('block_time_row'); if (timeRow) timeRow.style.display = 'none';
+      blockAvailability = { dates: [], byDate: {} };
+      const h = document.getElementById('block_helper'); if (h) h.style.display = 'none';
+      blockForm = { employeeId: '', date: '', time: '' };
+    }
+    function openBlockModal(){
+      if (!blockModal) return;
+      try{ updateBlockEmployeeSelect(); }catch(_){}
+      resetBlockFormUI();
+      blockModal.style.display = 'flex';
+      // next frame to allow transition
+      requestAnimationFrame(()=>{ blockModal.classList.add('modal-open'); });
+      try { document.body.dataset.prevOverflow = document.body.style.overflow || ''; document.body.style.overflow = 'hidden'; } catch(_){}
+      document.addEventListener('keydown', onBlockModalEsc);
+    }
+    function closeBlockModal(){
+      if (!blockModal) return;
+      closeBlockCal();
+      blockModal.classList.remove('modal-open');
+      const onEnd = () => {
+        blockModal.style.display = 'none';
+        try { document.body.style.overflow = document.body.dataset.prevOverflow || ''; delete document.body.dataset.prevOverflow; } catch(_){}
+        document.removeEventListener('keydown', onBlockModalEsc);
+      };
+      blockModal.addEventListener('transitionend', onEnd, { once: true });
+    }
+    function onBlockModalEsc(e){ if (e.key === 'Escape') closeBlockModal(); }
 
     function renderCalendar(container, monthDate, onSelect, mode){
       const year = monthDate.getFullYear(); const month = monthDate.getMonth();
@@ -224,6 +438,7 @@
       const m = employeesMap[empId];
       return m || '-';
     }
+    function slotLowerToUpper(s){ if (s==='morning') return 'MORNING'; if (s==='afternoon') return 'AFTERNOON'; return 'FULL_DAY'; }
     function statusIconSvg(status){
       // Simple inline SVGs, sized via CSS (.badge svg)
       const circle = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" /></svg>';
@@ -296,8 +511,8 @@
     function renderActionsHtml(b){
       const busy = !!processing[b.id];
       function btn(label, action, variant){ const cls = variant?(' btn-'+variant):''; return '<button class="btn'+cls+'" aria-label="'+label+'" data-action="'+action+'" '+(busy?'disabled':'')+' style="margin-right:6px;">'+(busy?'Processing...':label)+'</button>'; }
-      if (b.status==='pending') return btn('Confirm','confirm','') + btn('Cancel','cancel','danger');
-      if (b.status==='confirmed') return btn('Finish','complete','secondary');
+      if (b.status==='pending') return btn('Accept','confirm','') + btn('Reject','cancel','delete-ghost');
+      if (b.status==='confirmed') return btn('Finish','complete','');
       return '';
     }
     function bindActionButtons(rootEl, b){
@@ -367,7 +582,7 @@
       try{
         const startSec = ymdToUtcSeconds(dateFilter.startDate);
         const endSec = ymdToUtcSeconds(dateFilter.endDate) + 86399; // inclusive end-of-day
-        const path = '/books?start_date='+startSec+'&end_date='+endSec+'&page='+currentPage;
+        const path = '/books?date_from='+startSec+'&date_to='+endSec+'&page='+currentPage;
         const resp = await request('GET', path);
         const arr = Array.isArray(resp && resp.data) ? resp.data : (Array.isArray(resp) ? resp : []);
         bookings = arr.map(mapApiBooking);
@@ -409,12 +624,54 @@
         console.warn('Failed to load employees map', e);
         employeesMap = {};
       }
+      // Populate block employee select when data is available
+      try { updateBlockEmployeeSelect(); } catch(_){ }
+    }
+
+    function updateBlockEmployeeSelect(){
+      if (!blockEmpSelect) return;
+      const entries = Object.entries(employeesMap);
+      const has = entries.length > 0;
+      blockEmpSelect.innerHTML = '';
+      const opt0 = document.createElement('option');
+      opt0.value = '';
+      opt0.disabled = true; opt0.selected = true;
+      opt0.textContent = has ? 'Select employee' : 'No employees available';
+      blockEmpSelect.appendChild(opt0);
+      entries.forEach(([id, name]) => {
+        const opt = document.createElement('option');
+        opt.value = String(id); opt.textContent = name || ('Employee '+id);
+        blockEmpSelect.appendChild(opt);
+      });
     }
 
     // Wire events
     startInput.addEventListener('click', ()=>{ openCal('start'); });
     endInput.addEventListener('click', ()=>{ openCal('end'); });
     loadBtn.addEventListener('click', ()=>{ currentPage = 1; serverMeta = null; loadList(); });
+
+    // Wire block UI
+    if (openBlockBtn) openBlockBtn.addEventListener('click', openBlockModal);
+    if (blockCloseBtn) blockCloseBtn.addEventListener('click', closeBlockModal);
+    if (blockModal) blockModal.addEventListener('click', function(e){ if (e.target === blockModal) closeBlockModal(); });
+    if (blockDateInput) blockDateInput.addEventListener('click', function(){ if (blockForm.employeeId) openBlockCal(); });
+    if (blockEmpSelect) blockEmpSelect.addEventListener('change', function(){ blockForm.employeeId = blockEmpSelect.value; blockForm.date=''; if (blockDateInput) blockDateInput.value=''; blockForm.time=''; loadBlockAvailability(); });
+    if (blockBtn) blockBtn.addEventListener('click', async function(){
+      if (!blockForm.employeeId) { notify('Select an employee first','error'); return; }
+      if (!blockForm.date) { notify('Pick a date to block','error'); return; }
+      if (!blockForm.time) { notify('Select a time slot','error'); return; }
+      const payload = { employee_id: blockForm.employeeId, date: ymdToUtcSeconds(blockForm.date), time_slot: slotLowerToUpper(blockForm.time) };
+      try {
+        await request('POST', '/books/admin-off', payload);
+        notify('Availability blocked','ok');
+        closeBlockModal();
+        // Optionally refresh list
+        try { loadList(); } catch(_){}
+      } catch(e){
+        console.error(e);
+        notify('Failed to block availability','error');
+      }
+    });
 
     // Init
     renderFilters();
@@ -425,3 +682,4 @@
 </body>
 
 </html>
+<!-- -->

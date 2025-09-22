@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login | Moments</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="common.css" />
+  <link rel="stylesheet" href="16. Bookings/booking.css" />
+  <style>
+    /* Beautify login card */
+    .login-card { max-width: 420px; margin: 0 auto; }
+    .brand-wrap { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:6px; }
+    .brand-logo { width:56px; height:auto; }
+    .brand-title { color: var(--brand-primary); margin:0; }
+    .subtitle { text-align:center; margin-top:6px; }
+    .password-wrap { position: relative; }
+    .toggle-pass { position:absolute; right:8px; top:50%; transform: translateY(-50%); background: transparent; border: 0; color: var(--brand-primary); padding: 6px; cursor: pointer; border-radius: 6px; }
+    .toggle-pass:hover { background: #f3f4f6; }
+    .hint { text-align:center; font-size: 0.9rem; color: #888; margin-top: 8px; }
+  </style>
+  <script src="headerscript.js" defer></script>
+  <script src="layout.js" defer></script>
+  <script>
+    // Simple client-side admin login
+    document.addEventListener('DOMContentLoaded', function () {
+      // If already logged in, go straight to admin
+      try {
+        var authed = (sessionStorage.getItem('adminAuthed') === 'true') || (localStorage.getItem('adminAuthed') === 'true');
+        if (authed) {
+          window.location.replace('17. admin.html');
+          return;
+        }
+      } catch (_) { /* ignore */ }
+
+      var form = document.getElementById('admin-login-form');
+      var userInput = document.getElementById('username');
+      var passInput = document.getElementById('password');
+      var rememberCbx = document.getElementById('remember');
+      var errorBox = document.getElementById('error-box');
+      var toggle = document.getElementById('toggle-pass');
+
+      function setError(msg) {
+        if (!errorBox) return;
+        errorBox.textContent = msg || '';
+        errorBox.style.display = msg ? 'block' : 'none';
+      }
+
+      if (toggle && passInput) {
+        toggle.addEventListener('click', function(){
+          var isPw = passInput.getAttribute('type') === 'password';
+          passInput.setAttribute('type', isPw ? 'text' : 'password');
+          toggle.textContent = isPw ? 'Sembunyikan' : 'Tampilkan';
+          passInput.focus();
+        });
+      }
+
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var u = (userInput && userInput.value || '').trim();
+          var p = (passInput && passInput.value || '').trim();
+          if (u === 'test1' && p === 'test') {
+            try {
+              if (rememberCbx && rememberCbx.checked) {
+                localStorage.setItem('adminAuthed', 'true');
+              } else {
+                sessionStorage.setItem('adminAuthed', 'true');
+              }
+            } catch (_) { }
+            window.location.href = '17. admin.html';
+          } else {
+            setError('Username atau password salah.');
+          }
+        });
+      }
+    });
+  </script>
+</head>
+
+<body>
+  <!-- Header -->
+  <div id="header"></div>
+  <!-- Header End -->
+
+  <!-- Content -->
+  <main class="booking-wrapper centered-main">
+    <div class="booking-card login-card">
+      <div class="brand-wrap">
+        <img class="brand-logo" src="logo.png" alt="Moments Logo" />
+        <h1 class="tagline brand-title">Admin Login</h1>
+      </div>
+      <p class="helper subtitle">Masuk untuk mengelola halaman admin.</p>
+      <p class="hint">Contoh kredensial: Username <strong>test1</strong>, Password <strong>test</strong></p>
+
+      <form id="admin-login-form" style="margin-top:16px;">
+        <div class="form-row">
+          <label for="username">Username</label>
+          <input class="input" type="text" id="username" name="username" placeholder="Masukkan username" autocomplete="username" required />
+        </div>
+        <div class="form-row">
+          <label for="password">Password</label>
+          <div class="password-wrap">
+            <input class="input" type="password" id="password" name="password" placeholder="Masukkan password" autocomplete="current-password" required />
+            <button id="toggle-pass" type="button" class="toggle-pass" aria-label="Tampilkan/sembunyikan password">Tampilkan</button>
+          </div>
+        </div>
+        <div class="form-row" style="flex-direction: row; align-items:center; gap:8px; margin-top: 2px;">
+          <input type="checkbox" id="remember" name="remember" />
+          <label for="remember" class="helper" style="margin:0;">Ingat saya di perangkat ini</label>
+        </div>
+
+        <div id="error-box" class="helper" style="display:none;color:#b00020; margin-top: 6px;"></div>
+
+        <button type="submit" class="btn" style="width:100%; margin-top:14px;">Login</button>
+      </form>
+    </div>
+  </main>
+  <!-- Content End -->
+
+  <!-- Footer -->
+  <div id="footer"></div>
+  <!-- Footer End -->
+</body>
+
+</html>
+<!-- -->
+

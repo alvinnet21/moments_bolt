@@ -153,8 +153,8 @@
 .badge-default { background: #777; }
 
 /* Role badges */
-.badge-role-photographer { background: #90caf9; color: #0d47a1; }
-.badge-role-videographer { background: #ffcc80; color: #e65100; }
+.badge-role-photographer { background: var(--brand-primary, #998c7f); color: #fff; }
+.badge-role-videographer { background: var(--brand-primary, #998c7f); color: #fff; }
 
 .info-grid {
   display: grid;
@@ -167,6 +167,12 @@
 
 .info-grid strong { color: #374151; font-weight: 700; }
 .card-actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Admin employees: action buttons */
+.btn-edit-brand { background: var(--brand-primary, #998c7f); color: #fff; border-color: var(--brand-primary, #998c7f); }
+.btn-edit-brand:hover { background: var(--brand-primary-dark, #8d7762); }
+.btn-delete-ghost { background: #fff; color: var(--brand-primary, #998c7f); border: 1px solid #e5e7eb; }
+.btn-delete-ghost:hover { background: #f9f9f9; }
 
 /* Employees form */
 .emp-form {
@@ -188,7 +194,7 @@
 .quick-card .icon { font-size: 28px; }
 .quick-card .title { font-weight: 700; }
 .quick-card .desc { color: #6b7280; font-size: 14px; }
-.quick-card-link { text-decoration: none; color: inherit; }
+.quick-card link { text-decoration: none; color: inherit; }
 
 /* Force non-italic text within booking/admin cards */
 .booking-card, .booking-card *,
@@ -202,3 +208,4 @@
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif !important;
   font-weight: 400;
 }
+

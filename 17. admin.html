@@ -7,7 +7,14 @@
   <title>Admin | Moments</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="common.css" />
-  <link rel="stylesheet" href="booking.css" />
+  <link rel="stylesheet" href="16. Bookings/booking.css" />
+  <script>
+    // Redirect to login if not authenticated (simple client-side guard)
+    try {
+      var authed = (sessionStorage.getItem('adminAuthed') === 'true') || (localStorage.getItem('adminAuthed') === 'true');
+      if (!authed) { window.location.replace('18. admin-login.html'); }
+    } catch (e) { window.location.replace('18. admin-login.html'); }
+  </script>
   <script src="headerscript.js" defer></script>
   <script src="layout.js" defer></script>
 </head>
@@ -20,16 +27,19 @@
   <!-- Content -->
   <main class="booking-wrapper centered-main">
     <div class="booking-card" style="text-align:center;">
+      <div style="display:flex; justify-content:flex-end;">
+        <button id="logout_btn" class="btn btn-ghost" style="margin-top:4px;">Logout</button>
+      </div>
       <h1 class="tagline" style="color: var(--brand-primary);">Admin</h1>
       <p class="helper" style="margin-top:8px;">Choose a section to manage:</p>
       <div class="quick-cards">
-        <a class="quick-card quick-card-link" href="admin-bookings.html" aria-label="Open Booking Requests">
+        <a class="quick-card quick-card-link" href="19. admin-bookings.html" aria-label="Open Booking Requests">
           <div class="icon">📋</div>
           <div class="title">Booking Requests</div>
           <div class="desc">Review, confirm, cancel, and finish bookings.</div>
           <span class="btn">Open Bookings</span>
         </a>
-        <a class="quick-card quick-card-link" href="admin-employees.html" aria-label="Manage Employees">
+        <a class="quick-card quick-card-link" href="20. admin-employees.html" aria-label="Manage Employees">
           <div class="icon">👤</div>
           <div class="title">Employees</div>
           <div class="desc">Add and manage photographers and videographers.</div>
@@ -43,6 +53,19 @@
   <!-- Footer -->
   <div id="footer"></div>
   <!-- Footer End -->
+  <script>
+    (function(){
+      var btn = document.getElementById('logout_btn');
+      if (btn) {
+        btn.addEventListener('click', function(){
+          try { sessionStorage.removeItem('adminAuthed'); localStorage.removeItem('adminAuthed'); } catch(_) {}
+          window.location.replace('18. admin-login.html');
+        });
+      }
+    })();
+  </script>
 </body>
 
 </html>
+<!-- -->
+

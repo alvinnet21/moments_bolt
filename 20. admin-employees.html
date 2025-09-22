@@ -7,7 +7,14 @@
   <title>Admin | Employees</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="common.css" />
-  <link rel="stylesheet" href="booking.css" />
+  <link rel="stylesheet" href="16. Bookings/booking.css" />
+  <script>
+    // Simple guard: redirect to login when not authenticated
+    try {
+      var authed = (sessionStorage.getItem('adminAuthed') === 'true') || (localStorage.getItem('adminAuthed') === 'true');
+      if (!authed) { window.location.replace('18. admin-login.html'); }
+    } catch(e){ window.location.replace('18. admin-login.html'); }
+  </script>
   <script src="headerscript.js" defer></script>
   <script src="layout.js" defer></script>
 </head>
@@ -34,7 +41,10 @@
             <span>Reload</span>
           </button>
         </div>
-        <button class="btn" id="add_btn" aria-label="Add Employee">Add Employee</button>
+        <div class="inline" style="gap:8px;">
+          <button class="btn" id="add_btn" aria-label="Add Employee">Add Employee</button>
+          <button class="btn btn-ghost" id="logout_btn" aria-label="Logout">Logout</button>
+        </div>
       </section>
 
       <section id="form_section" class="emp-form" style="display:none;">
@@ -84,6 +94,15 @@
   <!-- Footer End -->
 
   <script>
+    // Logout wiring
+    (function(){
+      var btn = document.getElementById('logout_btn');
+      if (btn) btn.addEventListener('click', function(){
+        try { sessionStorage.removeItem('adminAuthed'); localStorage.removeItem('adminAuthed'); } catch(_) {}
+        window.location.replace('18. admin-login.html');
+      });
+    })();
+
     const CFG = { apiBase: 'http://localhost:8001' };
     // Request helper
     function prefixApi(path){ if (path.startsWith('http')) return path; const rel = path.startsWith('/api')?path:('/api'+(path.startsWith('/')?path:'/'+path)); return CFG.apiBase + rel; }
@@ -160,10 +179,10 @@
             '<div><strong>Phone</strong><div>'+(emp.phone||'-')+'</div></div>'+
           '</div>'+
           '<div class="card-actions">'+
-            '<button class="btn btn-ghost btn-icon icon-only" data-action="edit" aria-label="Edit employee '+(emp.name||'')+'" title="Edit">'
+            '<button class=\"btn btn-icon icon-only btn-edit-brand\" data-action="edit" aria-label="Edit employee '+(emp.name||'')+'" title="Edit">'
               +'<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42L18.37 3.29a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.83z"/></svg>'+
             '</button>'+
-            '<button class="btn btn-danger btn-icon icon-only" data-action="delete" aria-label="Delete employee '+(emp.name||'')+'" title="'+(busy?'Processing...':'Delete')+'" '+(busy?'disabled':'')+'> '
+            '<button class=\"btn btn-icon icon-only btn-delete-ghost\" data-action="delete" aria-label="Delete employee '+(emp.name||'')+'" title="'+(busy?'Processing...':'Delete')+'" '+(busy?'disabled':'')+'> '
               +'<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>'+
             '</button>'+
           '</div>';
@@ -225,3 +244,5 @@
 </body>
 
 </html>
+<!-- -->
+

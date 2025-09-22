@@ -7,9 +7,16 @@
   <title>Booking | Moments</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="common.css" />
-  <link rel="stylesheet" href="booking.css" />
+  <link rel="stylesheet" href="16. Bookings/booking.css" />
   <script src="headerscript.js" defer></script>
   <script src="layout.js" defer></script>
+  <style>
+    /* Booking modal fade/scale animation */
+    #booking_modal { opacity: 0; transition: opacity .22s ease; }
+    #booking_modal.modal-open { opacity: 1; }
+    #booking_modal .modal-card { transform: scale(0.98); opacity: 0; transition: transform .22s ease, opacity .22s ease; }
+    #booking_modal.modal-open .modal-card { transform: scale(1); opacity: 1; }
+  </style>
 </head>
 
 <body>
@@ -29,6 +36,18 @@
   <!-- Footer -->
   <div id="footer"></div>
   <!-- Footer End -->
+
+  <!-- Booking Modal -->
+  <div id="booking_modal" style="display:none; position:fixed; inset:0; background: rgba(0,0,0,0.4); z-index:60; align-items:center; justify-content:center; padding: 20px;">
+    <div class="booking-card modal-card" style="max-width:560px; width:100%; padding:20px; text-align:center;">
+      <div id="booking_modal_icon" style="margin-bottom:8px;"></div>
+      <h2 id="booking_modal_title" class="tagline" style="color: var(--brand-primary); font-size: 22px; margin:0 0 6px 0;">Notification</h2>
+      <div id="booking_modal_message" class="helper" style="font-size: 1rem; color:#374151;"></div>
+      <div class="inline" style="justify-content:center; margin-top:12px; gap:8px;">
+        <button id="booking_modal_close" type="button" class="btn">Close</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     // Optional config
@@ -71,6 +90,50 @@
       return undefined;
     }
     window.BookingRequest = { request };
+
+    // Popup helpers
+    (function(){
+      var modal = document.getElementById('booking_modal');
+      var iconEl = document.getElementById('booking_modal_icon');
+      var titleEl = document.getElementById('booking_modal_title');
+      var msgEl = document.getElementById('booking_modal_message');
+      var closeBtn = document.getElementById('booking_modal_close');
+      function emailCheckIcon(){
+        return '<svg viewBox="0 0 24 24" width="56" height="56" aria-hidden="true" focusable="false" style="color:var(--brand-primary);">\
+          <g fill="currentColor">\
+            <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7.5a.5.5 0 0 1 0-1H20a1 1 0 0 0 1-1V7.5l-8.9 5.56a2 2 0 0 1-2.2 0L1 7.5V18a1 1 0 0 0 1 1h3.5a.5.5 0 0 1 0 1H2a2 2 0 0 1-2-2V6l0-.02L2 6Zm.99 0L12 11.75 21.01 6H2.99Z"/>\
+            <path d="M7.5 21a.5.5 0 0 1 0-1h.29a5.5 5.5 0 1 1 0 1H7.5Zm7.7-1.85 2.65-2.65-.7-.7-1.95 1.95-.95-.95-.7.7 1.65 1.65Z"/>\
+          </g>\
+        </svg>';
+      }
+      function errorIcon(){
+        return '<svg viewBox="0 0 24 24" width="56" height="56" aria-hidden="true" focusable="false" style="color:#b00020;">\
+          <path fill="currentColor" d="M1 21h22L12 2 1 21zm12-3h-2v2h2v-2zm0-8h-2v6h2v-6z"/>\
+        </svg>';
+      }
+      function openPopup(type, title, message){
+        if (!modal) return;
+        iconEl.innerHTML = (type === 'success') ? emailCheckIcon() : errorIcon();
+        titleEl.textContent = title || (type === 'success' ? 'Booking Request Sent' : 'Submission Failed');
+        msgEl.textContent = message || '';
+        modal.style.display = 'flex';
+        // allow transition on next frame
+        requestAnimationFrame(function(){ modal.classList.add('modal-open'); });
+        try { document.body.dataset.prevOverflow = document.body.style.overflow || ''; document.body.style.overflow = 'hidden'; } catch(_){ }
+      }
+      function closePopup(){
+        if (!modal) return;
+        modal.classList.remove('modal-open');
+        modal.addEventListener('transitionend', function handler(){
+          modal.removeEventListener('transitionend', handler);
+          modal.style.display = 'none';
+          try { document.body.style.overflow = document.body.dataset.prevOverflow || ''; delete document.body.dataset.prevOverflow; } catch(_){ }
+        }, { once: true });
+      }
+      if (closeBtn) closeBtn.addEventListener('click', closePopup);
+      if (modal) modal.addEventListener('click', function(e){ if (e.target === modal) closePopup(); });
+      window.BookingPopup = { openPopup, closePopup };
+    })();
 
     // Utils
     const pad = (n) => String(n).padStart(2, '0');
@@ -143,7 +206,7 @@
           </div>\
           <div class="form-row">\
             <label for="customer_phone">Phone Number</label>\
-            <input id="customer_phone" class="input" type="tel" placeholder="Digits only" />\
+            <input id="customer_phone" class="input" type="tel" placeholder="+61 412345678" />\
             <div class="error" id="phone-error" style="display:none;"></div>\
           </div>\
           <div class="form-row">\
@@ -453,14 +516,15 @@
           customer_phone: formData.phone.trim(),
         };
         request('POST', '/books', payload).then(function(){
-          alert('Booking request sent! We will contact you shortly');
+          var emailCopy = formData.email.trim();
+          BookingPopup.openPopup('success', 'Booking Request Sent', 'We\'ve sent a confirmation to ' + emailCopy + '. Please check your inbox (and spam) to confirm your booking.');
           // reset
           formData = { serviceType: formData.serviceType, employeeId: '', date: '', time: '', customerName: '', phone: '', email: '' };
           employeeSelect.value = ''; dateInput.value=''; nameInput.value=''; phoneInput.value=''; emailInput.value='';
           availability = { dates: [], byDate: {} }; renderTimeSlots();
         }).catch(function(err){
           console.error(err);
-          alert(String(err));
+          BookingPopup.openPopup('error', 'Submission Failed', 'Failed to submit booking: ' + String(err));
         }).finally(function(){ submitting = false; submitBtn.disabled = false; submitBtn.textContent = 'Submit Booking Request'; });
       });
 
