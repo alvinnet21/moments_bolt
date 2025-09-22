@@ -103,7 +103,7 @@
       });
     })();
 
-    const CFG = { apiBase: 'http://localhost:8001' };
+    const CFG = { apiBase: 'http://localhost/moments_backend/public' };
     // Request helper
     function prefixApi(path){ if (path.startsWith('http')) return path; const rel = path.startsWith('/api')?path:('/api'+(path.startsWith('/')?path:'/'+path)); return CFG.apiBase + rel; }
     async function request(method, path, body){
