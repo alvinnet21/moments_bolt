@@ -5,29 +5,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Photography Services</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="common.css">
-    <link rel="stylesheet" href="6. Videography Pricelist/vpriceliststyle.css">
-    <script src="headerscript.js" defer></script>
-    <script src="layout.js" defer></script>
+    <link rel="stylesheet" href="style.css"> <!-- Link to external CSS -->
+    <link rel="stylesheet" href="6. Videography Pricelist/vpriceliststyle.css"> <!-- Link to external CSS -->
+    <script src="headerscript.js" defer></script> <!-- Using defer -->
 </head>
 
 <body>
 <!-- Header -->
 <div id="header"></div>
-<!-- Header End -->
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('header.html')
+        .then(response => {
+        if (!response.ok) {
+        throw new Error('Network response was not ok');
+        }
+        return response.text();
+        })
+        .then(data => {
+        document.getElementById('header').innerHTML = data;
+        })
+        .catch(error => {
+        console.error('Error fetching the header:', error);
+        });
+        });
+</script>
+<!-- Header End -->
 <!-- Content -->
 <div style="text-align: center; margin-top: 50px;">
-    <h1 class="tagline">PRICE <span>LIST</span></h1>
+    <h1 class="tagline";">PRICE <span>LIST</span></h1>
 <div class="container">
-    <div class="card" onclick="showDetails('6. Videography Pricelist/prewed.mp4','Evergreen Collection', '$3000 base','Half-day wedding coverage\n1 photographer\nAll photos included\n50 touch-ups included')">
+    <div class="card" onclick="showDetails('6. Videography Pricelist/vid1.mp4','Evergreen Collection', '$3000 base','Half-day wedding coverage\n1 photographer\nAll photos included\n50 touch-ups included')">
         <div class="image-wrapper">
             <img src="6. Videography Pricelist/paket1.webp" alt="Evergreen Collection">
-            <div class="play-button" onclick="showDetails('6. Videography Pricelist/prewed.mp4',
+            <div class="play-button" onclick="showDetails('6. Videography Pricelist/vid1.mp4',
             'Evergreen Collection', '$3000 base',
             'Half-day wedding coverage\n1 photographer\nAll photos included\n50 touch-ups included')">
-                <i class="play-icon">▶</i>
+                <i class="play-icon">►</i>
             </div>    
         </div>
         <div class="card-content">
@@ -35,13 +50,13 @@
             <p class="price">$3000 base</p>
         </div>
     </div>
-    <div class="card" onclick="showDetails('6. Videography Pricelist/prewed.mp4','Amber Collection', '$6000 base', 'Full-day wedding coverage\n2 photographers\n1 cinematographer\n4K Wedding Highlight Film\n80 touch-ups included')">
+    <div class="card" onclick="showDetails('6. Videography Pricelist/vid2.mp4','Amber Collection', '$6000 base', 'Full-day wedding coverage\n2 photographers\n1 cinematographer\n4K Wedding Highlight Film\n80 touch-ups included')">
         <div class="image-wrapper">
             <img src="6. Videography Pricelist/paket2.webp" alt="Amber Collection">
-        <div class="play-button" onclick="showDetails('6. Videography Pricelist/prewed.mp4',
+        <div class="play-button" onclick="showDetails('6. Videography Pricelist/vid2.mp4',
         'Amber Collection', '$6000 base', 
         'Full-day wedding coverage\n2 photographers\n1 cinematographer\n4K Wedding Highlight Film\n80 touch-ups included')">
-            <i class="play-icon">▶</i>
+            <i class="play-icon">►</i>
         </div>
         </div>
         <div class="card-content">
@@ -49,13 +64,13 @@
             <p class="price">$6000 base</p>
         </div>
     </div>
-        <div class="card" onclick="showDetails('6. Videography Pricelist/prewed.mp4',
+        <div class="card" onclick="showDetails('6. Videography Pricelist/vid3.mp4',
         'Infinity Collection', '$8500 base', 
         'Full-day wedding coverage\n2 photographers\n2 cinematographers\nUnlimited photos\n120 touch-ups included\nWedding Highlight Film\nFull Wedding Feature Film\nSame Day Edit\nDrone footage\nCustom wedding album and USB')">
             <div class="image-wrapper">
             <img src="6. Videography Pricelist/paket3.webp" alt="Infinity Collection">
-        <div class="play-button" onclick="showDetails('6. Videography Pricelist/prewed.mp4','Infinity Collection', '$8500 base', 'Full-day wedding coverage\n2 photographers\n2 cinematographers\nUnlimited photos\n120 touch-ups included\nWedding Highlight Film\nFull Wedding Feature Film\nSame Day Edit\nDrone footage\nCustom wedding album and USB')">
-            <i class="play-icon">▶</i>
+        <div class="play-button" onclick="showDetails('6. Videography Pricelist/vid3.mp4','Infinity Collection', '$8500 base', 'Full-day wedding coverage\n2 photographers\n2 cinematographers\nUnlimited photos\n120 touch-ups included\nWedding Highlight Film\nFull Wedding Feature Film\nSame Day Edit\nDrone footage\nCustom wedding album and USB')">
+            <i class="play-icon">►</i>
         </div>
         </div>
         <div class="card-content">
@@ -87,6 +102,23 @@
 <!-- Footer -->
     <div id="footer"></div>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch('footer.html')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById('footer').innerHTML = data;
+                })
+                .catch(error => {
+                    console.error('Error fetching the footer:', error);
+                });
+        });
+    </script>
 </body>
 
 </html>
